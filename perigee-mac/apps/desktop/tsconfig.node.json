@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "noEmit": true,
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@perigee/event-schema": ["../../packages/event-schema/src/index.ts"],
+      "@perigee/engine-protocol": ["../../packages/engine-protocol/src/index.ts"],
+      "@perigee/engine-grok-build": ["../../packages/engine-grok-build/src/index.ts"],
+      "@perigee/engine-grok-acp": ["../../packages/engine-grok-acp/src/index.ts"],
+      "@perigee/host-core": ["../../packages/host-core/src/index.ts"],
+      "@perigee/md-core": ["../../packages/md-core/src/index.ts"]
+    }
+  },
+  "include": [
+    "electron.vite.config.ts",
+    "src/main/**/*",
+    "src/preload/**/*",
+    "../../packages/event-schema/src/**/*",
+    "../../packages/engine-protocol/src/**/*",
+    "../../packages/engine-grok-build/src/**/*",
+    "../../packages/engine-grok-acp/src/**/*",
+    "../../packages/host-core/src/**/*",
+    "../../packages/md-core/src/**/*"
+  ]
+}

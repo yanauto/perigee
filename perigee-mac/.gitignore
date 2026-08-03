@@ -1,0 +1,24 @@
+node_modules/
+dist/
+out/
+*.log
+.DS_Store
+.vite/
+coverage/
+*.tsbuildinfo
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.env
+.env.*
+!.env.example
+apps/desktop/release/
+release/
+# 上游 CLI 源码自带 .git，勿塞进本仓提交
+vendor/
+.claude/sessions/raw/
+# Kimi 执行方会话运行时，不进仓
+.kimi-code/
+*.dmg
+*.zip
+*.blockmap

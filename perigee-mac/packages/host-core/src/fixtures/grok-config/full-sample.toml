@@ -1,0 +1,25 @@
+[cli]
+installer = "internal"
+auto_update = true
+
+[marketplace]
+official_marketplace_auto_installed = true
+
+[ui]
+max_thoughts_width = 120
+fork_secondary_model = "grok-4.5"
+yolo = false
+permission_mode = "ask"
+
+[mcp_servers.grok-computer-use]
+command = "/opt/fake/gcu-bridge"
+args = []
+enabled = true
+
+[mcp_servers.disabled-srv]
+command = "/opt/fake/off"
+enabled = false
+
+[mcp_servers.http-demo]
+url = "https://example.com/mcp"
+enabled = true

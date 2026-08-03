@@ -1,0 +1,11 @@
+{"type":"available_commands","tools":["read_file","search_replace","write"],"commands":["compact"]}
+{"type":"thought","data":"I will read the file."}
+{"type":"tool_call","toolCallId":"call-demo-1","title":"read_file","kind":"read","status":"pending","toolName":"read_file","rawInput":{"target_file":"src/a/b.ts"},"content":[],"locations":[]}
+{"type":"tool_call_update","toolCallId":"call-demo-1","status":"completed","content":[{"type":"content","content":{"type":"text","text":"const x = 1\n"}}],"rawOutput":null,"locations":[{"path":"src/a/b.ts"}]}
+{"type":"text","data":"File "}
+{"type":"text","data":"starts with const x = 1."}
+{"type":"usage","usage":{"input_tokens":100,"output_tokens":20,"cache_read_input_tokens":0,"cache_creation_input_tokens":0,"reasoning_tokens":5}}
+{"type":"tool_call","toolCallId":"call-demo-2","title":"search_replace","kind":"edit","status":"pending","toolName":"search_replace","rawInput":{"path":"src/a/b.ts","old_string":"const x = 1","new_string":"const x = 2"},"content":[],"locations":[]}
+{"type":"tool_call_update","toolCallId":"call-demo-2","status":"completed","content":[],"rawOutput":null,"locations":[{"path":"src/a/b.ts"}]}
+{"type":"text","data":"Updated."}
+{"type":"end","stopReason":"end_turn","sessionId":"019fb-demo-session","requestId":"req-demo","usage":{"input_tokens":120,"output_tokens":30}}

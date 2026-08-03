@@ -1,0 +1,8 @@
+.claude/sessions/raw/
+.DS_Store
+node_modules/
+dist/
+release/
+*.log
+.env
+.env.*

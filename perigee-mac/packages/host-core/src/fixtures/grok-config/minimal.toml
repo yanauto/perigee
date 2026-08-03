@@ -1,0 +1,7 @@
+[ui]
+permission_mode = "ask"
+
+[mcp_servers.demo]
+command = "/usr/bin/true"
+args = []
+enabled = true
