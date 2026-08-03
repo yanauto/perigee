@@ -27,5 +27,9 @@ Requires Node ≥20 and the official Grok Build CLI installed locally. Sync the 
 - Win 测试:`perigee-win/`,问题直接开 Issue
 - 提交前跑 `pnpm typecheck && pnpm test`
 
+## License
+
+Apache-2.0 — see [LICENSE](LICENSE).
+
 ---
 Perigee is an independent project, not affiliated with or endorsed by xAI.
