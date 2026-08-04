@@ -1,12 +1,14 @@
 <div align="center">
 
-# Perigee 🛰️
+<img src="perigee-mac/design/brand/favicon.svg" width="120" alt="Perigee icon">
 
-**Mission control for your Grok agents.**
+# Perigee
 
-A native macOS orchestrator for Grok Build CLI — multi-session orchestration, Chrome control via MCP, live markdown rendering.
+A macOS desktop for running Grok agents — multiple sessions in one window, built-in browser control, live markdown rendering.
 
-[English](#english) · [简体中文](README.zh-CN.md) · [Website](https://perigee.yan-auto.me) · [Follow @yanautome](https://x.com/yanautome)
+[English](#english) · [简体中文](README.zh-CN.md) · [Website](https://perigee.yan-auto.me) · [@yanautome](https://x.com/yanautome)
+
+<img src="assets/screenshots/overview.png" alt="Perigee running five agent sessions; an architecture review report is open in the main pane" width="920">
 
 </div>
 
@@ -19,13 +21,25 @@ A native macOS orchestrator for Grok Build CLI — multi-session orchestration, 
 | Platform | State |
 |---|---|
 | **macOS** | ✅ **Ready** — daily-driven by the team |
-| **Windows** | 🚧 In progress — porting & testing, hold tight |
+| **Windows** | 🚧 In progress — porting & testing |
 
 ### What it does
 
-- **Orchestrate** — run and steer multiple agent sessions from one cockpit. No more window juggling.
-- **Chrome control, built in** — your agents drive the browser through Flyby (an MCP tool): open pages, read content, operate the web — supervised and permissioned.
-- **Live markdown** — agents write documents constantly; Perigee renders them as they land. Reports, plans, notes — readable at a glance.
+- **Multiple sessions** — run several agent sessions side by side. The sidebar shows what each one is doing; switch between them anytime.
+- **Browser control, built in** — agents drive Chrome through Flyby (an MCP tool): open pages, read content, operate the web. Every step is visible and permission-gated.
+- **Live markdown** — agents write documents constantly; Perigee renders them as they're being written. Finished documents open in a built-in reader panel.
+
+<div align="center">
+
+<img src="assets/screenshots/flyby-browser.png" alt="An agent used Flyby to read the live Product Hunt homepage and wrote a ranked summary table" width="860">
+
+*An agent used Flyby to read the live Product Hunt homepage, then wrote this summary.*
+
+<img src="assets/screenshots/live-markdown.png" alt="A porting-status report rendering in real time as the agent writes it" width="860">
+
+*A status report, rendered as the agent writes it.*
+
+</div>
 
 ### Quick start (macOS)
 
@@ -38,7 +52,7 @@ pnpm dev
 
 **Requirements**: Node ≥ 20 · pnpm · the official Grok Build CLI installed locally (Stub mode lets you try the UI without it).
 
-Packaged .dmg releases are coming with the public launch — watch the [Releases](https://github.com/yanauto/perigee/releases) page.
+Packaged .dmg releases are coming — watch the [Releases](https://github.com/yanauto/perigee/releases) page.
 
 ### Project layout
 
@@ -49,7 +63,7 @@ Packaged .dmg releases are coming with the public launch — watch the [Releases
 
 ### Contributing
 
-Issues and PRs welcome. Run `pnpm typecheck && pnpm test` before submitting. See `perigee-mac/docs/` for the code map and API contracts.
+Issues and PRs welcome. Run `pnpm typecheck && pnpm test` before submitting.
 
 ### License
 
