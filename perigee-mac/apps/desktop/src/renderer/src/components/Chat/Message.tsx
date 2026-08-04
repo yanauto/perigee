@@ -1,10 +1,12 @@
-import { useEffect, useState, type MouseEvent } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import type { ChatBlock } from '../../lib/types'
 import { renderMarkdown } from '../../lib/markdown'
 import { linkify, looksLikePath } from '../../lib/paths'
 
-/** 流式 MD 渲染防抖（ms）：避免每个 delta 同步跑 marked */
-const STREAM_MD_DEBOUNCE_MS = 40
+/** 流式 MD 渲染节流（ms）：让 UI 跟着动画帧走，避免整块跳字 */
+const STREAM_MD_DEBOUNCE_MS = 24
+const STREAM_MIN_CHARS_PER_FRAME = 1
+const STREAM_MAX_CHARS_PER_FRAME = 18
 
 type Props = {
   block: ChatBlock
@@ -66,6 +68,63 @@ export function Message({ block, onOpenPath }: Props) {
   return null
 }
 
+function useSmoothStreamingText(text: string, streaming: boolean): string {
+  const [displayText, setDisplayText] = useState(text)
+  const displayRef = useRef(text)
+  const targetRef = useRef(text)
+  const rafRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    targetRef.current = text
+
+    if (!streaming) {
+      if (rafRef.current != null) {
+        window.cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+      displayRef.current = text
+      setDisplayText(text)
+      return
+    }
+
+    if (!text.startsWith(displayRef.current)) {
+      displayRef.current = text
+      setDisplayText(text)
+      return
+    }
+
+    if (rafRef.current != null) return
+
+    const tick = () => {
+      const target = targetRef.current
+      const current = displayRef.current
+      const backlog = target.length - current.length
+      if (backlog <= 0) {
+        rafRef.current = null
+        return
+      }
+      const step = Math.max(
+        STREAM_MIN_CHARS_PER_FRAME,
+        Math.min(STREAM_MAX_CHARS_PER_FRAME, Math.ceil(backlog / 5))
+      )
+      const next = target.slice(0, current.length + step)
+      displayRef.current = next
+      setDisplayText(next)
+      rafRef.current = window.requestAnimationFrame(tick)
+    }
+
+    rafRef.current = window.requestAnimationFrame(tick)
+  }, [text, streaming])
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current != null) window.cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
+
+  return displayText
+}
+
 function AssistantBody({
   text,
   streaming,
@@ -75,23 +134,23 @@ function AssistantBody({
   streaming: boolean
   onMdClick: (e: MouseEvent<HTMLDivElement>) => void
 }) {
-  // 方案 A：流式也即时 Markdown 渲染（防抖），完稿立刻再渲一次定稿
-  const [html, setHtml] = useState(() => (text.trim() ? renderMarkdown(text) : ''))
+  const displayText = useSmoothStreamingText(text, streaming)
+  const [html, setHtml] = useState(() => (displayText.trim() ? renderMarkdown(displayText) : ''))
 
   useEffect(() => {
-    if (!text.trim()) {
+    if (!displayText.trim()) {
       setHtml('')
       return
     }
     if (!streaming) {
-      setHtml(renderMarkdown(text))
+      setHtml(renderMarkdown(displayText))
       return
     }
     const t = window.setTimeout(() => {
-      setHtml(renderMarkdown(text))
+      setHtml(renderMarkdown(displayText))
     }, STREAM_MD_DEBOUNCE_MS)
     return () => window.clearTimeout(t)
-  }, [text, streaming])
+  }, [displayText, streaming])
 
   return (
     <div className={`msg msg-assistant${streaming ? ' is-streaming' : ''}`}>
