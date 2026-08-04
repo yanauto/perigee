@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { renderMarkdown } from './index.js'
+import { renderMarkdown, sanitizeHtml } from './index.js'
 
 describe('md-core', () => {
   it('renders gfm heading and toc', () => {
@@ -14,5 +14,19 @@ describe('md-core', () => {
     expect(r.html.toLowerCase()).not.toContain('<script')
     expect(r.html.toLowerCase()).not.toContain('javascript:')
     expect(r.html.toLowerCase()).not.toMatch(/\son\w+\s*=/)
+  })
+
+  it('preserves safe links', () => {
+    expect(sanitizeHtml('<a href="https://example.com/a">safe</a>')).toContain(
+      'href="https://example.com/a"'
+    )
+  })
+
+  it('neutralizes dangerous url protocols even when obfuscated', () => {
+    expect(sanitizeHtml('<a href="java&#x73;cript:alert(1)">x</a>')).toContain('href="#"')
+    expect(sanitizeHtml('<img src=java\nscript:alert(1)>')).toContain('src="#"')
+    expect(sanitizeHtml('<a href="data:text/html,<script>alert(1)</script>">x</a>')).toContain(
+      'href="#"'
+    )
   })
 })
