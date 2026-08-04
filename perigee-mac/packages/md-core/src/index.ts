@@ -70,6 +70,10 @@ function isDangerousUrl(raw: string): boolean {
   return value.startsWith('javascript:') || value.startsWith('vbscript:') || value.startsWith('data:text/html')
 }
 
+function codePointOrEmpty(n: number): string {
+  return Number.isInteger(n) && n >= 0 && n <= 0x10ffff ? String.fromCodePoint(n) : ''
+}
+
 function decodeHtmlEntities(value: string): string {
   return value.replace(/&(#x[0-9a-f]+|#\d+|colon|tab|newline|amp);/gi, (_m, entity: string) => {
     const e = entity.toLowerCase()
@@ -77,14 +81,8 @@ function decodeHtmlEntities(value: string): string {
     if (e === 'tab') return '\t'
     if (e === 'newline') return '\n'
     if (e === 'amp') return '&'
-    if (e.startsWith('#x')) {
-      const n = Number.parseInt(e.slice(2), 16)
-      return Number.isFinite(n) ? String.fromCodePoint(n) : ''
-    }
-    if (e.startsWith('#')) {
-      const n = Number.parseInt(e.slice(1), 10)
-      return Number.isFinite(n) ? String.fromCodePoint(n) : ''
-    }
+    if (e.startsWith('#x')) return codePointOrEmpty(Number.parseInt(e.slice(2), 16))
+    if (e.startsWith('#')) return codePointOrEmpty(Number.parseInt(e.slice(1), 10))
     return ''
   })
 }
