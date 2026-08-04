@@ -1,35 +1,60 @@
+<div align="center">
+
 # Perigee 🛰️
 
-**Mission control for your Grok agents.** A native macOS orchestrator for Grok Build CLI — multi-session orchestration, computer use built in, live markdown rendering.
+**Mission control for your Grok agents.**
 
-> Private repo (pre-launch). Windows port in progress.
+A native macOS orchestrator for Grok Build CLI — multi-session orchestration, Chrome control via MCP, live markdown rendering.
 
-## Structure
+[English](#english) · [简体中文](README.zh-CN.md) · [Website](https://perigee.yan-auto.me) · [Follow @yanautome](https://x.com/yanautome)
 
-| Dir | What |
+</div>
+
+---
+
+## English
+
+### Status
+
+| Platform | State |
 |---|---|
-| `perigee-mac/` | macOS app (Electron + pnpm workspace) — the main product |
-| `perigee-win/` | Windows port (testing stage) |
+| **macOS** | ✅ **Ready** — daily-driven by the team |
+| **Windows** | 🚧 In progress — porting & testing, hold tight |
 
-## Quick start (mac)
+### What it does
+
+- **Orchestrate** — run and steer multiple agent sessions from one cockpit. No more window juggling.
+- **Chrome control, built in** — your agents drive the browser through GCC (Grok Chrome Control, an MCP tool): open pages, read content, operate the web — supervised and permissioned.
+- **Live markdown** — agents write documents constantly; Perigee renders them as they land. Reports, plans, notes — readable at a glance.
+
+### Quick start (macOS)
 
 ```bash
-cd perigee-mac
+git clone https://github.com/yanauto/perigee.git
+cd perigee/perigee-mac
 pnpm install
 pnpm dev
 ```
 
-Requires Node ≥20 and the official Grok Build CLI installed locally. Sync the reference CLI source with `scripts/` helpers if needed (vendor/ is not tracked).
+**Requirements**: Node ≥ 20 · pnpm · the official Grok Build CLI installed locally (Stub mode lets you try the UI without it).
 
-## For collaborators
+Packaged .dmg releases are coming with the public launch — watch the [Releases](https://github.com/yanauto/perigee/releases) page.
 
-- 开发主战场:`perigee-mac/`;技术文档见 `perigee-mac/docs/`(代码地图 / API-preload / design)
-- Win 测试:`perigee-win/`,问题直接开 Issue
-- 提交前跑 `pnpm typecheck && pnpm test`
+### Project layout
 
-## License
+| Dir | What |
+|---|---|
+| `perigee-mac/` | The macOS app (Electron + pnpm workspace) |
+| `perigee-win/` | Windows port (work in progress) |
 
-Apache-2.0 — see [LICENSE](LICENSE).
+### Contributing
+
+Issues and PRs welcome. Run `pnpm typecheck && pnpm test` before submitting. See `perigee-mac/docs/` for the code map and API contracts.
+
+### License
+
+[Apache-2.0](LICENSE)
 
 ---
-Perigee is an independent project, not affiliated with or endorsed by xAI.
+
+Perigee is an independent project, not affiliated with or endorsed by xAI. "Grok" is referenced only to describe compatibility with xAI's Grok Build CLI.
