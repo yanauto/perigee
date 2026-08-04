@@ -73,6 +73,14 @@ Packaged .dmg releases are coming — watch the [Releases](https://github.com/ya
 
 Issues and PRs welcome. Run `pnpm typecheck && pnpm test` before submitting.
 
+### Credits
+
+Built in the open by [@yanauto](https://github.com/yanauto), with:
+
+- [@dl8624091-coder](https://github.com/dl8624091-coder) — collaborator
+- [@Colorful-white](https://github.com/Colorful-white) — collaborator
+- **AI teammates** — parts of this codebase were written, reviewed, and even video-edited by **Grok** (xAI), **Kimi**, and **Claude** (Anthropic), working through the same multi-agent workflow Perigee is built for.
+
 ### License
 
 [Apache-2.0](LICENSE)

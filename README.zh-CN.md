@@ -71,6 +71,14 @@ pnpm dev
 
 欢迎 Issue 和 PR。提交前请跑 `pnpm typecheck && pnpm test`。
 
+### 致谢
+
+由 [@yanauto](https://github.com/yanauto) 公开构建,同行的还有:
+
+- [@dl8624091-coder](https://github.com/dl8624091-coder) —— 协作者
+- [@Colorful-white](https://github.com/Colorful-white) —— 协作者
+- **AI 队友** —— 本仓库的部分代码由 **Grok**(xAI)、**Kimi**、**Claude**(Anthropic)参与编写与评审,连发布视频都是它们剪的——用的正是 Perigee 自己主打的多 agent 工作流。
+
 ### 许可证
 
 [Apache-2.0](LICENSE)
