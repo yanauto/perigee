@@ -47,6 +47,17 @@ export {
   type GcuProbe
 } from './gcu-service.js'
 export {
+  configureDeepSeekGrokModel,
+  buildDeepSeekGrokModelConfig,
+  DEEPSEEK_GROK_MODEL_ID,
+  DEEPSEEK_GROK_DISPLAY_NAME,
+  DEEPSEEK_GROK_BASE_URL,
+  DEEPSEEK_GROK_ENV_KEY,
+  type DeepSeekGrokCredential,
+  type ConfigureDeepSeekGrokModelOptions,
+  type DeepSeekGrokModelConfig
+} from './deepseek-grok-config.js'
+export {
   loadGrokConfigSnapshot,
   listMcpViaCli,
   listModelsViaCli,
