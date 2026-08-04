@@ -1,0 +1,55 @@
+name: Build Mac Artifact
+
+on:
+  push:
+    branches:
+      - agent/deepseek-codex-engine
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Install dependencies
+        working-directory: perigee-mac
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Typecheck
+        working-directory: perigee-mac
+        run: pnpm --filter @perigee/app run typecheck
+
+      - name: Rebuild native modules
+        working-directory: perigee-mac
+        run: pnpm --filter @perigee/app run rebuild:native
+
+      - name: Build unpacked app
+        working-directory: perigee-mac
+        run: pnpm --filter @perigee/app run pack
+
+      - name: Package app zip
+        working-directory: perigee-mac/apps/desktop/release/mac-arm64
+        run: ditto -c -k --sequesterRsrc --keepParent Perigee.app Perigee-mac-arm64.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Perigee-mac-arm64
+          path: perigee-mac/apps/desktop/release/mac-arm64/Perigee-mac-arm64.zip
+          if-no-files-found: error
