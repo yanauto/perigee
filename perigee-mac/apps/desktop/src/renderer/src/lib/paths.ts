@@ -37,7 +37,11 @@ export function splitPaths(text: string): TextSegment[] {
 }
 
 /** 把纯文本渲染成「路径可点」的 React 节点（用户消息、工具参数等） */
-export function linkify(text: string, onOpenPath: (p: string) => void): ReactNode {
+export function linkify(
+  text: string,
+  onOpenPath: (p: string) => void,
+  openTitle = '打开文件'
+): ReactNode {
   const segs = splitPaths(text)
   if (!segs.some((s) => typeof s !== 'string')) return text
   return segs.map((s, i) =>
@@ -49,7 +53,7 @@ export function linkify(text: string, onOpenPath: (p: string) => void): ReactNod
             key: `p${i}`,
             type: 'button',
             className: 'path-chip',
-            title: '打开文件',
+            title: openTitle,
             onClick: () => onOpenPath(s.path.replace(/^\.\//, ''))
           },
           s.path

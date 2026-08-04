@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { JSX } from 'react'
 import type { Workbench } from '../../state/useWorkbench'
+import { useT } from '../../i18n'
 import { Button, EmptyState, Icon, IconButton } from '../ui'
 
 /**
@@ -18,6 +19,7 @@ export function SideChatModal({
   open: boolean
   onClose: () => void
 }): JSX.Element | null {
+  const t = useT()
   const [sideId, setSideId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const taRef = useRef<HTMLTextAreaElement>(null)
@@ -80,17 +82,23 @@ export function SideChatModal({
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <Icon name="message" size={14} />
-          <span>侧问 · {wb.activeSession?.title ?? '会话'}</span>
-          <IconButton tip="关闭" icon="x" onClick={onClose} />
+          <span>
+            {t('侧问')} · {wb.activeSession?.title ?? t('会话')}
+          </span>
+          <IconButton tip={t('关闭')} icon="x" onClick={onClose} />
         </div>
         <div className="modal-body">
           {!parentId ? (
-            <EmptyState icon="message" title="先打开一个主会话" sub="侧问需要以某个主会话为父会话建立。" />
+            <EmptyState
+              icon="message"
+              title={t('先打开一个主会话')}
+              sub={t('侧问需要以某个主会话为父会话建立。')}
+            />
           ) : (
             <>
               <div className="composer-hint" style={{ marginBottom: 10 }}>
-                独立引擎会话（不写入主对话记录）。请只问答；不要让它改代码。
-                {sideBusy ? ' 生成中…' : ''}
+                {t('独立引擎会话（不写入主对话记录）。请只问答；不要让它改代码。')}
+                {sideBusy ? ` ${t('生成中…')}` : ''}
               </div>
               <div
                 ref={scrollRef}
@@ -99,8 +107,10 @@ export function SideChatModal({
                 {blocks.length === 0 ? (
                   <EmptyState
                     icon="message"
-                    title="还没有侧问消息"
-                    sub={sideId ? '例如：这个错误是什么意思？' : '正在建立侧问会话…'}
+                    title={t('还没有侧问消息')}
+                    sub={
+                      sideId ? t('例如：这个错误是什么意思？') : t('正在建立侧问会话…')
+                    }
                   />
                 ) : (
                   blocks.map((b) => {
@@ -141,7 +151,7 @@ export function SideChatModal({
                 style={{ resize: 'none' }}
                 value={draft}
                 disabled={!sideId || sideBusy}
-                placeholder="例如：这个错误是什么意思？"
+                placeholder={t('例如：这个错误是什么意思？')}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -152,11 +162,11 @@ export function SideChatModal({
               />
               <div className="composer-bar">
                 <span className="composer-hint">
-                  <kbd>⌘Enter</kbd> 发送 · 独立 session · 关闭即弃
+                  <kbd>⌘Enter</kbd> {t('发送 · 独立 session · 关闭即弃')}
                 </span>
                 <span className="cb-right">
                   <Button variant="ghost" onClick={onClose}>
-                    关闭
+                    {t('关闭')}
                   </Button>
                   <Button
                     variant="primary"
@@ -164,7 +174,7 @@ export function SideChatModal({
                     disabled={!draft.trim() || !sideId || sideBusy}
                     onClick={submit}
                   >
-                    发送侧问
+                    {t('发送侧问')}
                   </Button>
                 </span>
               </div>

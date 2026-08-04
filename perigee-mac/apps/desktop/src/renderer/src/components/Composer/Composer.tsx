@@ -846,7 +846,7 @@ export function Composer({
                   <Icon name={k === 'image' ? 'image' : 'file'} size={12} />
                   <span>{a.path.split('/').pop()}</span>
                   <IconButton
-                    tip="移除附件"
+                    tip={t('移除附件')}
                     icon="x"
                     onClick={() =>
                       setAttachments((prev) => prev.filter((x) => x.path !== a.path))

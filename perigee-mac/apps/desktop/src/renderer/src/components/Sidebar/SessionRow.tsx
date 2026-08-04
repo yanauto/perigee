@@ -4,6 +4,10 @@ import type { SidebarGroup } from '../../state/sidebar-groups'
 import { attentionOf } from '../../state/session-order'
 import { closePop, usePopover } from '../../lib/popovers'
 import { placeRowMenu, type MenuPlacement } from './menu-placement'
+import {
+  resolveSessionDeleteClick,
+  SESSION_DELETE_CONFIRM_MS
+} from './session-delete-confirm'
 import { useT } from '../../i18n'
 import { Icon } from '../ui'
 
@@ -148,8 +152,30 @@ export function SessionRow({
     setConfirmDel(false)
   }, [menuOpen])
 
+  /* T029：确认窗口 2s → 6s。真机「删了没反应、删几遍都在」有一半是这里——
+     2 秒太短，用户第二次点下去时已经回落成「删除会话」，于是只是又 arm 了一次。 */
+  const armDelete = () => {
+    setConfirmDel(true)
+    if (delTimer.current !== null) window.clearTimeout(delTimer.current)
+    delTimer.current = window.setTimeout(() => setConfirmDel(false), SESSION_DELETE_CONFIRM_MS)
+  }
+
+  /** 两步删除：未武装 → 武装；已武装 → 关菜单 + 真正删除（键鼠共用） */
+  const performDeleteStep = () => {
+    const step = resolveSessionDeleteClick(confirmDel)
+    if (step.arm) {
+      armDelete()
+      return
+    }
+    if (delTimer.current !== null) window.clearTimeout(delTimer.current)
+    setConfirmDel(false)
+    closePop(popName)
+    onRemove(session.id)
+  }
+
   /* 字母快捷键：菜单开着时 R / A / D 直接生效（菜单是最上层，捕获相位吃掉事件，
-     不让 ChatStream 的 A/D 审批键与之打架）。输入框聚焦时不接管。 */
+     不让 ChatStream 的 A/D 审批键与之打架）。输入框聚焦时不接管。
+     D 二次：必须提交删除，不能只反复 arm（2026-08-04 真机：再点 / 再按 D 无响应）。 */
   useEffect(() => {
     if (!menuOpen || movePage) return
     const onKey = (e: KeyboardEvent) => {
@@ -171,20 +197,12 @@ export function SessionRow({
         if (archived) onUnarchive()
         else onArchive()
       } else {
-        armDelete()
+        performDeleteStep()
       }
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
-  }, [menuOpen, movePage, popName, archived, onArchive, onUnarchive])
-
-  /* T029：确认窗口 2s → 6s。真机「删了没反应、删几遍都在」有一半是这里——
-     2 秒太短，用户第二次点下去时已经回落成「删除会话」，于是只是又 arm 了一次。 */
-  const armDelete = () => {
-    setConfirmDel(true)
-    if (delTimer.current !== null) window.clearTimeout(delTimer.current)
-    delTimer.current = window.setTimeout(() => setConfirmDel(false), 6000)
-  }
+  }, [menuOpen, movePage, popName, archived, onArchive, onUnarchive, confirmDel, session.id, onRemove])
 
   const commitRename = (raw: string) => {
     const v = raw.trim()
@@ -387,24 +405,11 @@ export function SessionRow({
                   </>
                 ) : null}
                 <div className="menu-sep" />
-                {confirmDel ? (
-                  <button
-                    type="button"
-                    className="menu-item is-danger"
-                    onClick={run(() => {
-                      if (delTimer.current !== null) window.clearTimeout(delTimer.current)
-                      setConfirmDel(false)
-                      onRemove(session.id)
-                    })}
-                  >
-                    {t('再点一次确认删除')}
-                  </button>
-                ) : (
-                  <button type="button" className="menu-item is-danger" onClick={armDelete}>
-                    {t('删除会话')}
-                    <span className="mi-hint">D</span>
-                  </button>
-                )}
+                {/* 单按钮两步：避免拆成两个 button 时 DOM 替换/键位只 arm 不提交 */}
+                <button type="button" className="menu-item is-danger" onClick={performDeleteStep}>
+                  {confirmDel ? t('再点一次确认删除') : t('删除会话')}
+                  {!confirmDel ? <span className="mi-hint">D</span> : null}
+                </button>
               </>
             )}
           </div>

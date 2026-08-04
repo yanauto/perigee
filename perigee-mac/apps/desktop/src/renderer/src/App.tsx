@@ -214,10 +214,10 @@ export function App() {
   if (!wb.bridgeOk) {
     return (
       <div className="fatal">
-        <h2>预加载桥加载失败</h2>
+        <h2>{t('预加载桥加载失败')}</h2>
         <p>
-          未检测到 <code>window.perigee</code>。请确认 preload 以 CJS 打包（index.cjs），
-          ESM 输出在 sandbox 下会导致黑屏。
+          {t('未检测到')} <code>window.perigee</code>。
+          {t('请确认 preload 以 CJS 打包（index.cjs），ESM 输出在 sandbox 下会导致黑屏。')}
         </p>
       </div>
     )

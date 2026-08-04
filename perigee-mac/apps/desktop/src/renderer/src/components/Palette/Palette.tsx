@@ -265,10 +265,14 @@ export function Palette({
       void (async () => {
         try {
           const res = await window.perigee.session.command(sid, cmd)
-          if (res.status === 'error') wb.setError(`/${cmd} 执行失败：${res.detail}`)
-          else if (res.status === 'unsupported') wb.setError(`/${cmd} 暂不支持：${res.detail}`)
+          if (res.status === 'error')
+            wb.setError(`/${cmd} ${t('执行失败')}：${res.detail}`)
+          else if (res.status === 'unsupported')
+            wb.setError(`/${cmd} ${t('暂不支持')}：${res.detail}`)
         } catch (err) {
-          wb.setError(`slash 命令执行失败：${err instanceof Error ? err.message : String(err)}`)
+          wb.setError(
+            `${t('slash 命令执行失败')}：${err instanceof Error ? err.message : String(err)}`
+          )
         }
       })()
     }

@@ -1,8 +1,12 @@
 import { useEffect, useState, type JSX } from 'react'
+import { useI18n, useT } from '../../i18n'
+import { localizeUiText } from '../../lib/localize-ui-text'
 import { Icon } from '../ui'
 
 /** 预览：系统浏览器打开 URL（≠ Flyby 浏览器控制），记 lastPreviewUrl */
 export function PreviewView(): JSX.Element {
+  const t = useT()
+  const { lang } = useI18n()
   const [url, setUrl] = useState('http://127.0.0.1:3000')
   const [msg, setMsg] = useState<string | null>(null)
 
@@ -40,7 +44,7 @@ export function PreviewView(): JSX.Element {
       }}
     >
       <p style={{ color: 'var(--tx-3)', fontSize: 12 }}>
-        在系统浏览器查看 localhost / https 页面。Agent 操控 Chrome 请用 Flyby，不是这个面板。
+        {t('在系统浏览器查看 localhost / https 页面。Agent 操控 Chrome 请用 Flyby，不是这个面板。')}
       </p>
       <div style={{ display: 'flex', gap: 8 }}>
         <input
@@ -52,10 +56,12 @@ export function PreviewView(): JSX.Element {
           spellCheck={false}
         />
         <button type="button" className="btn btn-primary" onClick={open}>
-          <Icon name="external" size={12} /> 打开
+          <Icon name="external" size={12} /> {t('打开')}
         </button>
       </div>
-      {msg ? <div style={{ fontSize: 12, color: 'var(--tx-2)' }}>{msg}</div> : null}
+      {msg ? (
+        <div style={{ fontSize: 12, color: 'var(--tx-2)' }}>{localizeUiText(msg, lang)}</div>
+      ) : null}
     </div>
   )
 }

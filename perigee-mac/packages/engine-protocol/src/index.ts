@@ -169,7 +169,7 @@ export class StubEngine implements AgentEngine {
       ...base,
       type: 'assistant.message',
       id: newEventId('as'),
-      text: `（Stub）已收到，尚未接通 Grok 引擎。\n\n你说：${message.text}\n\n工作区会话将在阶段 2 接通 Grok Build / API。`
+      text: `(Stub) Message received — Grok engine is not connected yet.\n\nYou said: ${message.text}\n\nWorkspace sessions will connect to Grok Build / API in a later phase.`
     })
     this.emit({
       ...base,

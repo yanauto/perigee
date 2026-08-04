@@ -108,14 +108,22 @@ export function FilesView({ wb }: { wb: Workbench }): JSX.Element {
   }, [path])
 
   const isMd = !!path && MD_RE.test(path)
+  const copyLabel = t('复制')
   const mdHtml = useMemo(
-    () => (isMd && buf && !buf.loadError ? renderMarkdown(buf.content) : ''),
-    [isMd, buf]
+    () =>
+      isMd && buf && !buf.loadError
+        ? renderMarkdown(buf.content, { copyLabel })
+        : '',
+    [isMd, buf, copyLabel]
   )
 
   if (!wb.currentWorkspace) {
     return (
-      <EmptyState icon="folder" title="未打开工作区" sub="打开文件夹后可浏览与编辑文件。" />
+      <EmptyState
+        icon="folder"
+        title={t('未打开工作区')}
+        sub={t('打开文件夹后可浏览与编辑文件。')}
+      />
     )
   }
 
@@ -131,52 +139,54 @@ export function FilesView({ wb }: { wb: Workbench }): JSX.Element {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div className="editor-bar">
-        <IconButton tip="返回文件树" onClick={() => wb.setActiveFilePath(null)}>
+        <IconButton tip={t('返回文件树')} onClick={() => wb.setActiveFilePath(null)}>
           <Icon name="chevron" style={{ rotate: '180deg' }} />
         </IconButton>
         <span className="eb-path" style={{ minWidth: 0 }} title={path}>
           {path}
         </span>
-        {buf?.dirty ? <span className="dirty-dot" data-tip="未保存" /> : null}
+        {buf?.dirty ? <span className="dirty-dot" data-tip={t('未保存')} /> : null}
         <span style={{ marginLeft: 'auto' }} />
-        {buf?.truncated ? <span style={{ fontSize: 11, flex: 'none' }}>已截断</span> : null}
+        {buf?.truncated ? (
+          <span style={{ fontSize: 11, flex: 'none' }}>{t('已截断')}</span>
+        ) : null}
         {buf?.conflict ? (
-          <span style={{ fontSize: 11, color: 'var(--warn)', flex: 'none' }}>磁盘已变</span>
+          <span style={{ fontSize: 11, color: 'var(--warn)', flex: 'none' }}>{t('磁盘已变')}</span>
         ) : null}
         {buf?.conflict ? (
           <>
             <button type="button" className="btn" onClick={reloadDisk}>
-              重载磁盘
+              {t('重载磁盘')}
             </button>
             <button
               type="button"
               className="btn"
               disabled={!buf.dirty || saving}
-              data-tip="忽略磁盘变更，用当前缓冲覆盖"
+              data-tip={t('忽略磁盘变更，用当前缓冲覆盖')}
               onClick={() => void save(true)}
             >
-              强制覆盖
+              {t('强制覆盖')}
             </button>
           </>
         ) : null}
         {isMd ? (
           <button type="button" className="btn" onClick={() => setMdEditing((v) => !v)}>
-            {mdEditing ? '预览' : '编辑'}
+            {mdEditing ? t('预览') : t('编辑')}
           </button>
         ) : null}
         {/* 路径条操作小图标（ccd-10/11 chrome）：复制路径 / Finder 中显示 */}
         <IconButton
-          tip="复制路径"
+          tip={t('复制路径')}
           icon="copy"
           onClick={() => void window.perigee.clipboard.write(path)}
         />
         <IconButton
-          tip="在 Finder 中显示"
+          tip={t('在 Finder 中显示')}
           icon="folder-open"
           onClick={() => void window.perigee.workspace.reveal(absPath)}
         />
         <IconButton
-          tip="保存（⌘S）"
+          tip={t('保存（⌘S）')}
           icon="save"
           disabled={!buf?.dirty || saving}
           onClick={() => void save(false)}
@@ -197,7 +207,7 @@ export function FilesView({ wb }: { wb: Workbench }): JSX.Element {
           </Button>
         </EmptyState>
       ) : buf == null ? (
-        <EmptyState icon="file" title="加载中…" />
+        <EmptyState icon="file" title={t('加载中…')} />
       ) : isMd && !mdEditing ? (
         <div
           className="md-body"
@@ -208,6 +218,10 @@ export function FilesView({ wb }: { wb: Workbench }): JSX.Element {
             if (!btn) return
             const code = btn.closest('.codeblock')?.querySelector('code')?.textContent ?? ''
             void window.perigee.clipboard.write(code)
+            btn.textContent = t('已复制')
+            window.setTimeout(() => {
+              btn.textContent = t('复制')
+            }, 1200)
           }}
           dangerouslySetInnerHTML={{ __html: mdHtml }}
         />
@@ -238,6 +252,7 @@ function FileTree({
   active: string | null
   onOpen: (rel: string) => void
 }): JSX.Element {
+  const t = useT()
   const [entries, setEntries] = useState<DirEntry[]>([])
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [extra, setExtra] = useState<DirEntry[]>([])
@@ -338,7 +353,11 @@ function FileTree({
   return (
     <div className="ftree">
       {loaded && tree.length === 0 ? (
-        <EmptyState icon="folder" title="工作区为空" sub="该文件夹还没有可显示的文件。" />
+        <EmptyState
+          icon="folder"
+          title={t('工作区为空')}
+          sub={t('该文件夹还没有可显示的文件。')}
+        />
       ) : (
         renderNodes(tree, 0)
       )}

@@ -44,15 +44,22 @@ function lightHighlight(code: string, language: string): string {
   return out
 }
 
+export type MarkdownRenderOpts = {
+  /** 代码块复制钮文案（默认中文源串「复制」；EN 由调用方传 t('复制')） */
+  copyLabel?: string
+}
+
 /** 代码块渲染为带头栏（语言 + 复制钮）的结构，复制由容器点击委托处理 */
-function codeBlock({ text, lang }: Tokens.Code): string {
-  const language = (lang ?? '').trim().split(/\s/)[0] ?? ''
-  return (
-    `<div class="codeblock"><div class="codeblock-head">` +
-    `<span class="codeblock-lang">${escapeHtml(language || 'code')}</span>` +
-    `<button type="button" class="codeblock-copy" data-copy>复制</button></div>` +
-    `<pre><code class="language-${escapeHtml(language)}">${lightHighlight(text, language)}</code></pre></div>`
-  )
+function makeCodeBlock(copyLabel: string) {
+  return ({ text, lang }: Tokens.Code): string => {
+    const language = (lang ?? '').trim().split(/\s/)[0] ?? ''
+    return (
+      `<div class="codeblock"><div class="codeblock-head">` +
+      `<span class="codeblock-lang">${escapeHtml(language || 'code')}</span>` +
+      `<button type="button" class="codeblock-copy" data-copy>${escapeHtml(copyLabel)}</button></div>` +
+      `<pre><code class="language-${escapeHtml(language)}">${lightHighlight(text, language)}</code></pre></div>`
+    )
+  }
 }
 
 function escapeHtml(s: string): string {
@@ -60,18 +67,21 @@ function escapeHtml(s: string): string {
 }
 
 /** Markdown → 安全 HTML（GFM；脚本/事件属性剥离） */
-export function renderMarkdown(source: string): string {
+export function renderMarkdown(source: string, opts?: MarkdownRenderOpts): string {
   const renderer = new marked.Renderer()
-  renderer.code = codeBlock
+  renderer.code = makeCodeBlock(opts?.copyLabel ?? '复制')
   const html = marked.parse(source, { async: false, renderer }) as string
   return DOMPurify.sanitize(html, SANITIZE_OPTS)
 }
 
 /** Markdown → 安全 HTML + 标题目录（MD 阅读器用） */
-export function renderMarkdownWithToc(source: string): { html: string; toc: TocItem[] } {
+export function renderMarkdownWithToc(
+  source: string,
+  opts?: MarkdownRenderOpts
+): { html: string; toc: TocItem[] } {
   const toc: TocItem[] = []
   const renderer = new marked.Renderer()
-  renderer.code = codeBlock
+  renderer.code = makeCodeBlock(opts?.copyLabel ?? '复制')
   const slugCount = new Map<string, number>()
 
   renderer.heading = function ({ tokens, depth }: Tokens.Heading): string {
