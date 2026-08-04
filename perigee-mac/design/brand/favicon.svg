@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="Perigee">
+  <rect width="40" height="40" rx="9" fill="#04060b"></rect>
+  <defs>
+    <linearGradient id="ring" x1="36" y1="8" x2="7" y2="31" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8FD6FF" stop-opacity=".16"></stop>
+      <stop offset=".42" stop-color="#BFE2FF" stop-opacity=".5"></stop>
+      <stop offset=".8" stop-color="#EAF4FF" stop-opacity=".92"></stop>
+      <stop offset="1" stop-color="#FFFFFF"></stop>
+    </linearGradient>
+    <radialGradient id="core" cx="36%" cy="30%" r="76%">
+      <stop offset="0" stop-color="#6ea6d6"></stop>
+      <stop offset=".6" stop-color="#1d3247"></stop>
+      <stop offset="1" stop-color="#0a1420"></stop>
+    </radialGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#FF9E4A" stop-opacity=".55"></stop>
+      <stop offset="1" stop-color="#FF9E4A" stop-opacity="0"></stop>
+    </radialGradient>
+    <mask id="ringmask">
+      <rect width="40" height="40" fill="#000"></rect>
+      <ellipse cx="22" cy="20" rx="15" ry="9" fill="#fff"></ellipse>
+      <ellipse cx="23.2" cy="19" rx="12.8" ry="7.05" fill="#000"></ellipse>
+    </mask>
+  </defs>
+  <g transform="rotate(-24 20 20)">
+    <rect width="40" height="40" fill="url(#ring)" mask="url(#ringmask)"></rect>
+  </g>
+  <circle cx="20" cy="20" r="3.7" fill="url(#core)"></circle>
+  <circle cx="20" cy="20" r="3.7" fill="none" stroke="#8FD6FF" stroke-opacity=".4" stroke-width=".8"></circle>
+  <circle cx="8.12" cy="25.29" r="6.4" fill="url(#glow)"></circle>
+  <circle cx="8.12" cy="25.29" r="5.3" fill="none" stroke="#FF9E4A" stroke-opacity=".24" stroke-width=".8"></circle>
+  <circle cx="8.12" cy="25.29" r="2.4" fill="#FFAE60"></circle>
+</svg>
