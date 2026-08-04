@@ -24,7 +24,7 @@ describe('md-core', () => {
 
   it('neutralizes dangerous url protocols even when obfuscated', () => {
     expect(sanitizeHtml('<a href="java&#x73;cript:alert(1)">x</a>')).toContain('href="#"')
-    expect(sanitizeHtml('<img src=java\nscript:alert(1)>')).toContain('src="#"')
+    expect(sanitizeHtml('<img src="java\nscript:alert(1)">')).toContain('src="#"')
     expect(sanitizeHtml('<a href="data:text/html,<script>alert(1)</script>">x</a>')).toContain(
       'href="#"'
     )
