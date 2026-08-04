@@ -674,14 +674,14 @@ export function Composer({
   /* ---------- 渲染 ---------- */
 
   const placeholder = !wb.currentWorkspace
-    ? '先打开工作区，再派活…'
+    ? t('先打开工作区，再派活…')
     : !wb.activeSessionId
-      ? '先新建或选中一个会话（⌘N）…'
-      : '给 Grok 派活…' // r02 B4：placeholder 不带快捷键提示
+      ? t('先新建或选中一个会话（⌘N）…')
+      : t('给 Grok 派活…') // r02 B4：placeholder 不带快捷键提示
 
   /* T026：模型名显示层去 -build；settings 空则回退 CLI 默认 id */
   const modelLabel =
-    resolveModelLabel(wb.settings?.model, wb.cliDefaultModel) || '默认模型'
+    resolveModelLabel(wb.settings?.model, wb.cliDefaultModel) || t('默认模型')
 
   return (
     <div className="composer-wrap">
