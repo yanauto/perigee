@@ -36,6 +36,10 @@ import {
   type PermissionPolicy
 } from './permission-policy.js'
 import {
+  summarizeFsWrite,
+  summarizePermissionRequest
+} from './permission-summary.js'
+import {
   buildAcpPromptBlocks,
   DEFAULT_PROMPT_CAPABILITIES,
   parsePromptCapabilities,
@@ -64,6 +68,12 @@ export {
   pickDenyOptionId,
   policyToAcpModeId
 } from './permission-policy.js'
+export {
+  extractCommand,
+  summarizeFsWrite,
+  summarizePermissionRequest,
+  type PermissionSummary
+} from './permission-summary.js'
 export { resolveInWorkspace } from './workspace-path.js'
 export {
   normalizeAcpNotification,
@@ -1183,23 +1193,14 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
     ) {
       const allowOptionId = pickAllowOptionId(params.options)
       const denyOptionId = pickDenyOptionId(params.options)
-      const toolCall = (params.toolCall ?? {}) as Record<string, unknown>
-      const action = String(
-        params.toolName || params.tool || toolCall.title || toolCall.kind || 'tool'
-      )
-      const detail = JSON.stringify(params).slice(0, 2000)
-      const kind = String(toolCall.kind ?? params.kind ?? '')
-      const rawInput = toolCall.rawInput ?? toolCall.input ?? params.rawInput ?? params.input
-      const paths = extractPathsFromToolArgs(rawInput)
+      // 人话摘要给 UI；分类器用原始 toolName/kind + 命令/路径正文（禁止 dump 整包 JSON）
+      const summary = summarizePermissionRequest(params)
+      const { action, detail, toolName, kind, paths } = summary
       const policy = this.effectivePolicy(s)
+      const classifyCtx = { toolName, kind, detail, paths }
       const verdict = autoApprovesToolPermission(policy)
         ? 'allow'
-        : classifyToolPermission(policy, {
-            toolName: action,
-            kind,
-            detail,
-            paths
-          })
+        : classifyToolPermission(policy, classifyCtx)
 
       if (verdict === 'allow') {
         s.rpc?.respond(id, {
@@ -1235,8 +1236,8 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
       const highRisk =
         !!kind.match(/execute|shell/i) ||
         isDangerousShell(detail) ||
-        isDangerousShell(action) ||
-        isComputerUseTool({ toolName: action, kind, detail, paths })
+        isDangerousShell(toolName) ||
+        isComputerUseTool(classifyCtx)
       const risk: 'low' | 'medium' | 'high' = highRisk ? 'high' : 'medium'
       this.emitStatus(s.uiSessionId, 'waiting_approval')
       this.emit({
@@ -1339,8 +1340,7 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
       // ask：升格为人审（禁止直写绕过）
       const uiId = newEventId('apr')
       s.pendingFsWrite.set(id, { path, content, uiId })
-      const action = `write ${path}`
-      const detail = JSON.stringify({ path, bytes: content.length }).slice(0, 2000)
+      const { action, detail } = summarizeFsWrite(path, content.length)
       this.emitStatus(s.uiSessionId, 'waiting_approval')
       this.emit({
         type: 'approval.requested',

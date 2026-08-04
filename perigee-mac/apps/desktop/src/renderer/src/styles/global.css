@@ -1668,13 +1668,39 @@ html[data-platform='linux'] .drag {
   font-size: 10.5px;
   color: var(--tx-3);
 }
+.ac-detail-wrap {
+  margin-bottom: 9px;
+}
 .ac-detail {
   font-family: var(--mono);
   font-size: 12px;
   color: var(--tx-2);
   word-break: break-all;
-  margin-bottom: 9px;
   user-select: text;
+  white-space: pre-wrap;
+  line-height: 1.45;
+  max-height: 12em;
+  overflow: auto;
+}
+.ac-detail.is-collapsed {
+  max-height: 4.5em;
+  overflow: hidden;
+}
+.ac-detail-toggle {
+  display: inline-block;
+  margin-top: 4px;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  color: var(--tx-3);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ac-detail-toggle:hover {
+  color: var(--tx-2);
 }
 .ac-actions {
   display: flex;
