@@ -52,12 +52,39 @@ export function sanitizeHtml(html: string): string {
   out = out.replace(/<\s*(script|style|iframe|object|embed|link|meta)[^>]*\/?\s*>/gi, '')
   // 去掉 on* 事件属性
   out = out.replace(/\s+on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-  // javascript:/vbscript:/data:text/html 协议
-  out = out.replace(
-    /(href|src|xlink:href)\s*=\s*(["'])\s*(javascript|vbscript|data\s*:\s*text\s*\/\s*html)[^"']*\2/gi,
-    '$1=$2#$2'
+  return sanitizeUrlAttrs(out)
+}
+
+function sanitizeUrlAttrs(html: string): string {
+  return html.replace(
+    /\b(href|src|xlink:href)\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/gi,
+    (match, attr: string, _raw: string, dq?: string, sq?: string, bare?: string) => {
+      const value = dq ?? sq ?? bare ?? ''
+      return isDangerousUrl(value) ? `${attr}="#"` : match
+    }
   )
-  return out
+}
+
+function isDangerousUrl(raw: string): boolean {
+  const value = decodeHtmlEntities(raw).replace(/[\u0000-\u001F\u007F\s]+/g, '').toLowerCase()
+  return value.startsWith('javascript:') || value.startsWith('vbscript:') || value.startsWith('data:text/html')
+}
+
+function codePointOrEmpty(n: number): string {
+  return Number.isInteger(n) && n >= 0 && n <= 0x10ffff ? String.fromCodePoint(n) : ''
+}
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(/&(#x[0-9a-f]+|#\d+|colon|tab|newline|amp);/gi, (_m, entity: string) => {
+    const e = entity.toLowerCase()
+    if (e === 'colon') return ':'
+    if (e === 'tab') return '\t'
+    if (e === 'newline') return '\n'
+    if (e === 'amp') return '&'
+    if (e.startsWith('#x')) return codePointOrEmpty(Number.parseInt(e.slice(2), 16))
+    if (e.startsWith('#')) return codePointOrEmpty(Number.parseInt(e.slice(1), 10))
+    return ''
+  })
 }
 
 function slugify(text: string): string {

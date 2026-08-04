@@ -80,10 +80,17 @@ export class TranscriptStore {
     this.flushSession(sessionId)
     const p = this.pathFor(sessionId)
     if (!existsSync(p)) return []
-    return readFileSync(p, 'utf8')
-      .split('\n')
-      .filter(Boolean)
-      .map((line) => JSON.parse(line) as SessionEvent)
+    const events: SessionEvent[] = []
+    for (const line of readFileSync(p, 'utf8').split('\n')) {
+      const trimmed = line.trim()
+      if (!trimmed) continue
+      try {
+        events.push(JSON.parse(trimmed) as SessionEvent)
+      } catch {
+        // A single torn/corrupt jsonl line should not hide the rest of the transcript.
+      }
+    }
+    return events
   }
 
   exportMarkdown(sessionId: string, title: string): string {
