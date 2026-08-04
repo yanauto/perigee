@@ -10,8 +10,9 @@
 
 <img src="assets/screenshots/overview.png" alt="Perigee 同时运行五个 agent 会话,主面板展开一份架构评审报告" width="920">
 
-<!-- YOUTUBE_DEMO_PLACEHOLDER: 视频上线后替换为缩略图链接 -->
-🎬 **演示视频** —— 即将放在这里。
+<a href="https://youtu.be/Y_iETgHcjTA"><img src="https://img.youtube.com/vi/Y_iETgHcjTA/maxresdefault.jpg" width="920" alt="Perigee 演示视频——点击到 YouTube 观看"></a>
+
+🎬 **[2 分钟演示视频（YouTube）](https://youtu.be/Y_iETgHcjTA)**
 
 </div>
 

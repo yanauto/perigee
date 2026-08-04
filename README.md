@@ -10,8 +10,9 @@ A macOS desktop for running Grok agents — multiple sessions in one window, bui
 
 <img src="assets/screenshots/overview.png" alt="Perigee running five agent sessions; an architecture review report is open in the main pane" width="920">
 
-<!-- YOUTUBE_DEMO_PLACEHOLDER: replace with thumbnail link once the video is up -->
-🎬 **Demo video** — coming right here shortly.
+<a href="https://youtu.be/Y_iETgHcjTA"><img src="https://img.youtube.com/vi/Y_iETgHcjTA/maxresdefault.jpg" width="920" alt="Perigee demo video — click to watch on YouTube"></a>
+
+🎬 **[Watch the 2-minute demo on YouTube](https://youtu.be/Y_iETgHcjTA)**
 
 </div>
 
