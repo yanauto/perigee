@@ -7,7 +7,7 @@ import type {
   SessionRecord
 } from '../lib/perigee-api'
 import type { ChatBlock, InspectorState, RecentWorkspace } from '../lib/types'
-import { reduceEvent, seedBlocks } from '../lib/session-reducer'
+import { finalizeStreaming, reduceEvent, seedBlocks } from '../lib/session-reducer'
 import {
   applyNativeTaskEvent,
   mergeTaskEntries,
@@ -529,6 +529,16 @@ export function useWorkbench() {
     setPendingSend(null)
     const id = activeRef.current
     if (!id) return
+    // 本地立刻封口流式块：去掉斜杠光标 / 思考脉冲（引擎 cancel 只改 status→idle，不发 turn.end）
+    setBlocksMap((prev) => {
+      const cur = prev.get(id)
+      if (!cur) return prev
+      const sealed = finalizeStreaming(cur)
+      if (sealed === cur) return prev
+      const m = new Map(prev)
+      m.set(id, sealed)
+      return m
+    })
     await api.session.cancel(id).catch(() => {})
   }, [api])
 

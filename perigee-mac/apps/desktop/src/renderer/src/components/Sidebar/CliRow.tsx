@@ -131,7 +131,6 @@ export function CliRow({
           ref={moreRef}
           className="si-more"
           data-pop-trigger={popName}
-          data-tip={t('更多')}
           aria-label={t('更多')}
           aria-haspopup="menu"
           aria-expanded={menuOpen}

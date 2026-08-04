@@ -72,6 +72,9 @@ export function ChatStream({ wb }: { wb: Workbench }): JSX.Element {
   const sessionId = activeSessionId ?? ''
   const scrollRef = useRef<HTMLDivElement>(null)
   const pinnedRef = useRef(true)
+  /** 程序化粘底滚动窗口：忽略期间 onScroll，避免把用户松钉又钉回 */
+  const programmaticScrollRef = useRef(false)
+  const programmaticClearTimer = useRef<number | null>(null)
   /* T028：聚合行展开态按条目 key 记在列表层——虚拟滚动下滚出视口也不丢 */
   const [openTracks, setOpenTracks] = useState<ReadonlySet<string>>(() => new Set())
   const toggleTrack = useCallback((key: string) => {
@@ -169,10 +172,39 @@ export function ChatStream({ wb }: { wb: Workbench }): JSX.Element {
   })
 
   const onScroll = () => {
+    if (programmaticScrollRef.current) return
     const el = scrollRef.current
     if (!el) return
+    // 距底足够近才重新钉住；用户上翻后保持自由滚动
     pinnedRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
   }
+
+  /* 滚轮/触控立刻松钉：不依赖 onScroll 与程序化 scrollToIndex 抢时序 */
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY < 0) pinnedRef.current = false
+    }
+    let lastY: number | null = null
+    const onTouchStart = (e: TouchEvent) => {
+      lastY = e.touches[0]?.clientY ?? null
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY
+      if (y == null || lastY == null) return
+      if (y > lastY + 4) pinnedRef.current = false // 手指下移 = 内容上滚
+      lastY = y
+    }
+    el.addEventListener('wheel', onWheel, { passive: true })
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: true })
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [activeSessionId, currentWorkspace])
 
   // 粘底键：块数量变化 + 末块流式文本增长（同块 delta 时 length 不变，必须跟 text.length）
   const stickKey = useMemo(() => {
@@ -187,8 +219,13 @@ export function ChatStream({ wb }: { wb: Workbench }): JSX.Element {
   useEffect(() => {
     const el = scrollRef.current
     if (!el || !pinnedRef.current || items.length === 0) return
-    // 粘底：滚到最后一项（含同块流式增高）
+    programmaticScrollRef.current = true
+    if (programmaticClearTimer.current != null) window.clearTimeout(programmaticClearTimer.current)
     virtualizer.scrollToIndex(items.length - 1, { align: 'end' })
+    programmaticClearTimer.current = window.setTimeout(() => {
+      programmaticScrollRef.current = false
+      programmaticClearTimer.current = null
+    }, 80)
   }, [stickKey, virtualizer, items.length])
 
   /* ---------- 空态 ---------- */

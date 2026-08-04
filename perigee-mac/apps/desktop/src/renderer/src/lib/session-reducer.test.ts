@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { SessionEvent } from './perigee-api'
-import { reduceEvent, seedBlocks } from './session-reducer'
+import { finalizeStreaming, reduceEvent, seedBlocks } from './session-reducer'
 
 const base = { schemaVersion: 3 as const, sessionId: 's1' }
 let seq = 0
@@ -83,6 +83,19 @@ describe('session-reducer', () => {
     ])
     expect(blocks.map((b) => b.kind)).toEqual(['user', 'assistant', 'error'])
     expect('streaming' in blocks[1] && blocks[1].streaming).toBeFalsy()
+  })
+
+  it('finalizeStreaming：用户中止后立刻完稿（去掉 streaming 光标）', () => {
+    let blocks = reduceEvent([], ev({ type: 'assistant.delta', text: '已吐出' }))
+    blocks = reduceEvent(blocks, ev({ type: 'thought.delta', text: '想了一下' }))
+    expect(blocks.some((b) => 'streaming' in b && b.streaming)).toBe(true)
+    blocks = finalizeStreaming(blocks)
+    for (const b of blocks) {
+      if (b.kind === 'assistant' || b.kind === 'thought') {
+        expect(b.streaming).toBeFalsy()
+      }
+    }
+    expect(blocks.find((b) => b.kind === 'assistant')).toMatchObject({ text: '已吐出' })
   })
 
   it('同 id 消息去重（历史 + 实时并发）', () => {

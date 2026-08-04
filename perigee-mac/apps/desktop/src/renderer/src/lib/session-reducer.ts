@@ -325,11 +325,12 @@ function removeBlock(blocks: ChatBlock[], id: string): ChatBlock[] {
 }
 
 /**
- * 流式块收尾（turn.end / error / 历史播种后）。
+ * 流式块收尾（turn.end / error / 历史播种 / 用户中止后）。
  * 关键：把固定 stream:thought / stream:assistant id 换成唯一 id，
  * 否则下一轮 delta 会 append 到旧块 → 多轮思考串台（审计 Z6-01）。
+ * 导出供 cancel 本地立刻完稿（去掉 stream-caret，不必等引擎 turn.end）。
  */
-function finalizeStreaming(blocks: ChatBlock[]): ChatBlock[] {
+export function finalizeStreaming(blocks: ChatBlock[]): ChatBlock[] {
   let changed = false
   const next = blocks.map((b) => {
     if ((b.kind === 'assistant' || b.kind === 'thought') && b.streaming) {
