@@ -5,8 +5,8 @@ import {
 } from '@perigee/engine-protocol'
 import { writeJsonAtomic } from './atomic-write.js'
 
-/** headless = grok -p；acp = grok agent stdio（波次2）；grok-build = headless 别名 */
-export type EngineMode = 'acp' | 'headless' | 'stub' | 'grok-build'
+/** headless = grok -p；acp = grok agent stdio（波次2）；grok-build = headless 别名；codex-deepseek = Codex CLI + DeepSeek Responses */
+export type EngineMode = 'acp' | 'headless' | 'stub' | 'grok-build' | 'codex-deepseek'
 
 /** 权限策略：单源 engine-protocol（MEGA §12.2） */
 export type { PermissionPolicy }
@@ -58,6 +58,16 @@ export function mergeLayout(raw?: Partial<AppSettings['layout']> | null): AppSet
 export interface AppSettings {
   engineMode: EngineMode
   grokBinary: string
+  /** Codex CLI 可执行文件；留空时使用 PATH 或 ChatGPT.app 内置 codex */
+  codexBinary: string
+  /** DeepSeek API Key；只存本机 settings.json，禁止提交到仓库 */
+  deepseekApiKey: string
+  /** DeepSeek Responses API 模型，首版默认 deepseek-v4-flash */
+  deepseekModel: string
+  /** Codex 执行沙箱：首版默认仅允许当前工作区写入 */
+  codexSandbox: 'read-only' | 'workspace-write' | 'danger-full-access'
+  /** Codex 非交互执行的审批策略；首版默认 never，依赖 sandbox 限边界 */
+  codexApprovalPolicy: 'untrusted' | 'on-request' | 'never'
   model: string
   maxTurns: number
   /** 兼容字段：与 permissionPolicy 同步（ask→false，yolo→true） */
@@ -133,6 +143,11 @@ export const DEFAULT_SETTINGS: AppSettings = {
   // 主路径 ACP；失败可 fallback
   engineMode: 'acp',
   grokBinary: '',
+  codexBinary: '',
+  deepseekApiKey: '',
+  deepseekModel: 'deepseek-v4-flash',
+  codexSandbox: 'workspace-write',
+  codexApprovalPolicy: 'never',
   model: '',
   maxTurns: 30,
   alwaysApproveTools: false,
@@ -198,6 +213,11 @@ export class SettingsStore {
         ...DEFAULT_SETTINGS,
         ...raw,
         engineMode: (mode as AppSettings['engineMode']) ?? DEFAULT_SETTINGS.engineMode,
+        codexBinary: raw.codexBinary ?? DEFAULT_SETTINGS.codexBinary,
+        deepseekApiKey: raw.deepseekApiKey ?? DEFAULT_SETTINGS.deepseekApiKey,
+        deepseekModel: raw.deepseekModel ?? DEFAULT_SETTINGS.deepseekModel,
+        codexSandbox: raw.codexSandbox ?? DEFAULT_SETTINGS.codexSandbox,
+        codexApprovalPolicy: raw.codexApprovalPolicy ?? DEFAULT_SETTINGS.codexApprovalPolicy,
         permissionPolicy,
         alwaysApproveTools,
         layout: mergeLayout(raw.layout),
