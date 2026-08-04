@@ -29,4 +29,8 @@ describe('md-core', () => {
       'href="#"'
     )
   })
+
+  it('does not throw on invalid numeric entities', () => {
+    expect(() => sanitizeHtml('<a href="java&#9999999999;script:alert(1)">x</a>')).not.toThrow()
+  })
 })
