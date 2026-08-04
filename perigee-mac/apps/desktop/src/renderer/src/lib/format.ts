@@ -60,3 +60,14 @@ export function displayModel(model: string | null | undefined): string {
   if (!s) return ''
   return s.replace(/-build$/i, '')
 }
+
+/**
+ * 模型 chip 文案：优先 settings.model，空则回退 CLI 默认 id。
+ * 皆空时返回 ''，调用处再兜底 i18n「默认模型」。
+ */
+export function resolveModelLabel(
+  settingsModel: string | null | undefined,
+  cliDefault?: string | null
+): string {
+  return displayModel(settingsModel) || displayModel(cliDefault) || ''
+}

@@ -46,6 +46,8 @@ export function useWorkbench() {
 
   const [appInfo, setAppInfo] = useState<AppInfo | null>(null)
   const [settings, setSettings] = useState<AppSettings | null>(null)
+  /** CLI `grok models` 的默认模型 id；settings.model 空时 chip 回退用 */
+  const [cliDefaultModel, setCliDefaultModel] = useState<string | null>(null)
   const [currentWorkspace, setCurrentWorkspace] = useState<string | null>(null)
   const [recent, setRecent] = useState<RecentWorkspace[]>([])
   const [sessions, setSessions] = useState<SessionRecord[]>([])
@@ -612,6 +614,17 @@ export function useWorkbench() {
         setRecent(ws.recentWorkspaces ?? [])
         await refreshSessions()
         await refreshDiffs()
+        // 模型 chip：settings.model 空时显示 CLI 默认；失败不挡启动
+        try {
+          const listed = await api.integrations.listModels()
+          const id =
+            listed.defaultModel?.trim() ||
+            listed.models?.find((m) => m.isDefault)?.id?.trim() ||
+            ''
+          if (id) setCliDefaultModel(id)
+        } catch {
+          /* listModels 不可用时 chip 仍可回退「默认模型」 */
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e))
       }
@@ -676,6 +689,7 @@ export function useWorkbench() {
     bridgeOk,
     appInfo,
     settings,
+    cliDefaultModel,
     updateSettings,
     currentWorkspace,
     recent,

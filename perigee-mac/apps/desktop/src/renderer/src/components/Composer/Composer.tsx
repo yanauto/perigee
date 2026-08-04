@@ -41,7 +41,7 @@ import {
 import { canSubmit, composerAction } from '../../state/composer-actions'
 import { capabilityOf, fetchCommandCapabilities, type BridgeFeatures } from '../../state/features'
 import type { Workbench } from '../../state/useWorkbench'
-import { displayModel } from '../../lib/format'
+import { resolveModelLabel } from '../../lib/format'
 import { usePopover } from '../../lib/popovers'
 import { useT } from '../../i18n'
 import { Icon, IconButton } from '../ui'
@@ -679,9 +679,9 @@ export function Composer({
       ? '先新建或选中一个会话（⌘N）…'
       : '给 Grok 派活…' // r02 B4：placeholder 不带快捷键提示
 
-  /* T026：模型名显示层去 -build（settings 里存的仍是真实 id） */
-  const settingsModel = displayModel(wb.settings?.model)
-  const modelLabel = settingsModel || '默认模型'
+  /* T026：模型名显示层去 -build；settings 空则回退 CLI 默认 id */
+  const modelLabel =
+    resolveModelLabel(wb.settings?.model, wb.cliDefaultModel) || '默认模型'
 
   return (
     <div className="composer-wrap">

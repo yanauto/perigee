@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { baseName, dirName, displayModel, formatTokens, homeTilde } from './format'
+import {
+  baseName,
+  dirName,
+  displayModel,
+  formatTokens,
+  homeTilde,
+  resolveModelLabel
+} from './format'
 
 describe('displayModel（T026 模型名去后缀，只动显示层）', () => {
   it('剥掉尾部 -build', () => {
@@ -35,6 +42,25 @@ describe('displayModel（T026 模型名去后缀，只动显示层）', () => {
 
   it('幂等：显示值再过一次不变', () => {
     expect(displayModel(displayModel('grok-4.5-build'))).toBe('grok-4.5')
+  })
+})
+
+describe('resolveModelLabel（chip：settings 优先，空则 CLI 默认）', () => {
+  it('有 settings.model 时用它（并去 -build）', () => {
+    expect(resolveModelLabel('grok-4.5-build', 'other')).toBe('grok-4.5')
+    expect(resolveModelLabel('grok-code-fast-1', 'grok-4.5')).toBe('grok-code-fast-1')
+  })
+
+  it('settings 空时回退 cliDefault', () => {
+    expect(resolveModelLabel('', 'grok-4.5')).toBe('grok-4.5')
+    expect(resolveModelLabel(null, 'grok-4.5-build')).toBe('grok-4.5')
+    expect(resolveModelLabel(undefined, '  grok-4.5  ')).toBe('grok-4.5')
+  })
+
+  it('皆空 → 空串（调用处兜底「默认模型」）', () => {
+    expect(resolveModelLabel('', null)).toBe('')
+    expect(resolveModelLabel('', undefined)).toBe('')
+    expect(resolveModelLabel(null, null)).toBe('')
   })
 })
 

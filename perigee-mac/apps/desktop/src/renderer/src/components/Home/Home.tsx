@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { JSX, KeyboardEvent } from 'react'
 import type { PermissionPolicy, SessionRecord } from '../../lib/perigee-api'
-import { baseName, displayModel, homeTilde } from '../../lib/format'
+import { baseName, homeTilde, resolveModelLabel } from '../../lib/format'
 import type { BridgeFeatures } from '../../state/features'
 import type { Workbench } from '../../state/useWorkbench'
 import { usePopover } from '../../lib/popovers'
@@ -451,7 +451,9 @@ export function Home({
                 data-tip={t('切换模型（⌘M）')}
                 onClick={onOpenModelPicker}
               >
-                <span>{displayModel(wb.settings?.model) || t('默认模型')}</span>
+                <span>
+                  {resolveModelLabel(wb.settings?.model, wb.cliDefaultModel) || t('默认模型')}
+                </span>
               </button>
               {effortCapable ? (
                 <button
