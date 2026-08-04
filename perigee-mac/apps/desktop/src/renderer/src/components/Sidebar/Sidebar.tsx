@@ -180,10 +180,10 @@ export function Sidebar({
     return m
   }, [ordered, groupsState])
 
-  /* T025-返修 2：已被恢复成 Desktop 会话的 CLI transcript 不再重复列（关联键 engineSessionId） */
+  /* T025-返修 2：已被恢复成 Desktop 的 CLI 不重复列；用户已删的 cliId 墓碑防回魂 */
   const dedupedCli = useMemo(
-    () => dedupeCliSessions(cliItems, wb.sessions),
-    [cliItems, wb.sessions]
+    () => dedupeCliSessions(cliItems, wb.sessions, wb.forgottenCliIds),
+    [cliItems, wb.sessions, wb.forgottenCliIds]
   )
   /* T025-返修 3：CLI 也能归档 —— 主列表只留未归档的 */
   const visibleCliItems = useMemo(
@@ -230,17 +230,21 @@ export function Sidebar({
     />
   )
 
-  /* T030：物理删除 CLI 会话 —— 磁盘目录删除 + 归档表条目清理 + 列表即时刷新 */
+  /* T030：物理删除 CLI —— 眼下立刻消失（墓碑 + 本地滤掉），IPC 失败也不插回 */
   const removeCli = (cliId: string) => {
+    wb.forgetCliId(cliId)
+    setCliItems((prev) => prev.filter((c) => c.id !== cliId))
+    wb.unarchiveItem(cliArchiveKey(cliId))
     void window.perigee.session
       .removeExternal(cliId)
       .then((r) => {
         if (!r.ok) {
           wb.setError(`${t('删除失败')}：${'detail' in r ? (r.detail ?? r.reason) : r.reason}`)
+          // 仍保持墓碑隐藏；可选重拉
+          setCliTick((v) => v + 1)
           return
         }
-        wb.unarchiveItem(cliArchiveKey(cliId)) // 归档表里的 cli: 条目一并清理
-        setCliTick((v) => v + 1) // 重拉列表：该条当场消失
+        setCliTick((v) => v + 1)
       })
       .catch((e: unknown) => {
         wb.setError(`${t('删除失败')}：${e instanceof Error ? e.message : String(e)}`)

@@ -33,6 +33,7 @@ import {
   withOptimistic,
   type PendingSend
 } from './pending-send'
+import { sessionBusy } from './composer-actions'
 
 /**
  * 工作台总线：收口所有 window.perigee 订阅与状态。
@@ -69,6 +70,10 @@ export function useWorkbench() {
   const [pendingSend, setPendingSend] = useState<PendingSend | null>(null)
   /** T026：归档表提到总线——侧栏（隐藏已归档）与设置「已归档」子页两处消费同一份状态 */
   const [archived, setArchived] = useState<ArchivedState>(EMPTY_ARCHIVED)
+  /** 本进程用户已删的 CLI transcript id：防删 Desktop 后 listExternal 回魂成「恢复到 Desktop」 */
+  const [forgottenCliIds, setForgottenCliIds] = useState<ReadonlySet<string>>(() => new Set())
+  /** 乐观删除的 Desktop 会话 id：挡住迟到的 session:updated 把行插回 */
+  const forgottenSessionIdsRef = useRef<Set<string>>(new Set())
   /** T027：应用内打不开时的兜底弹窗（系统默认应用 / Finder 显示） */
   const [openFallback, setOpenFallback] = useState<{
     path: string
@@ -84,11 +89,8 @@ export function useWorkbench() {
     () => sessions.find((s) => s.id === activeSessionId) ?? null,
     [sessions, activeSessionId]
   )
-  /* 乐观发送期间也算「在忙」——对话页据此显示等待态，别让用户对着空白页发呆 */
-  const busy =
-    !!pendingSend ||
-    (!!activeSession &&
-      ['streaming', 'tool_running', 'waiting_approval'].includes(String(activeSession.status)))
+  /* 仅当前绑定会话在忙才 busy；首页 active=null 不继承后台 stream（见 sessionBusy） */
+  const busy = sessionBusy(activeSession, !!pendingSend)
 
   const blocks = useMemo(() => {
     const real = activeSessionId ? (blocksMap.get(activeSessionId) ?? []) : []
@@ -547,21 +549,43 @@ export function useWorkbench() {
     [api]
   )
 
+  /** 侧栏删 CLI 行 / 删 Desktop 联删：记墓碑，listExternal 结果过滤 */
+  const forgetCliId = useCallback((cliId: string) => {
+    const id = cliId.trim()
+    if (!id) return
+    setForgottenCliIds((prev) => {
+      if (prev.has(id)) return prev
+      const n = new Set(prev)
+      n.add(id)
+      return n
+    })
+  }, [])
+
+  /**
+   * 删除会话：侧栏立刻消失（乐观）；IPC 失败也不把行插回（符合「眼下消失」）。
+   * 若有 engineSessionId，记入 forgottenCliIds，避免 CLI transcript 回魂成「恢复到 Desktop」。
+   */
   const removeSession = useCallback(
     async (sessionId: string) => {
+      const rec = sessions.find((s) => s.id === sessionId)
+      const cliId = rec?.engineSessionId?.trim()
+      forgottenSessionIdsRef.current.add(sessionId)
+      // 乐观：立刻从列表/块/active 摘掉
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId))
+      if (activeRef.current === sessionId) setActiveSession(null)
+      setBlocksMap((prev) => {
+        const m = new Map(prev)
+        m.delete(sessionId)
+        return m
+      })
+      if (cliId) forgetCliId(cliId)
       try {
         await api.session.remove(sessionId)
-        if (activeRef.current === sessionId) setActiveSession(null)
-        setBlocksMap((prev) => {
-          const m = new Map(prev)
-          m.delete(sessionId)
-          return m
-        })
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e))
       }
     },
-    [api, setActiveSession]
+    [api, setActiveSession, sessions, forgetCliId]
   )
 
   const revertTurn = useCallback(
@@ -636,7 +660,10 @@ export function useWorkbench() {
         setRecent(p.state?.recentWorkspaces ?? [])
         void refreshSessions()
       }),
-      api.session.onUpdated((list) => setSessions(list)),
+      api.session.onUpdated((list) => {
+        const dead = forgottenSessionIdsRef.current
+        setSessions(dead.size ? list.filter((s) => !dead.has(s.id)) : list)
+      }),
       api.session.onEvent(applyEvent),
       api.diff.onUpdated((list) => {
         // 广播可能是 listMeta（无 before/after）：与本地缓存合并，避免丢已有全文
@@ -730,6 +757,8 @@ export function useWorkbench() {
     archived,
     archiveItem,
     unarchiveItem,
+    forgottenCliIds,
+    forgetCliId,
     beginPendingSend,
     attachPending,
     clearPendingSend,

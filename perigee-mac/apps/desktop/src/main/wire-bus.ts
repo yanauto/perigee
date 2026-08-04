@@ -51,6 +51,16 @@ export function hasPendingDeltaBroadcast(): boolean {
   return deltaBroadcastQ.size > 0
 }
 
+/** 关窗 / 退出：停批合定时器、丢弃队列，避免 destroyed 后仍 send */
+export function clearDeltaBroadcast(): void {
+  if (deltaBroadcastTimer != null) {
+    clearTimeout(deltaBroadcastTimer)
+    deltaBroadcastTimer = null
+  }
+  deltaBroadcastQ.clear()
+  _broadcast = null
+}
+
 export function wireBus(ctx: MainCtx): void {
   _broadcast = (channel, payload) => ctx.broadcast(channel, payload)
   ctx.bus.subscribe((event: SessionEvent) => {

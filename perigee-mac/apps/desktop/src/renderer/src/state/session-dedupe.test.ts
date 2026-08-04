@@ -40,6 +40,17 @@ describe('侧栏跨源去重（T025-返修：同一对话出现两条）', () =>
     expect(dedupeCliSessions(external, [])).toHaveLength(3)
   })
 
+  it('用户已删的 CLI id 墓碑：Desktop 删后也不回魂成可恢复行', () => {
+    const external = [cli(CLI_ID, TITLE), cli('keep')]
+    // 无 Desktop 关联时本会全部保留
+    expect(dedupeCliSessions(external, []).map((c) => c.id).sort()).toEqual(
+      [CLI_ID, 'keep'].sort()
+    )
+    // 墓碑过滤
+    const out = dedupeCliSessions(external, [], new Set([CLI_ID]))
+    expect(out.map((c) => c.id)).toEqual(['keep'])
+  })
+
   it('同一个 CLI 会话被恢复多次（真机就有 4 条）也只滤掉那一条外部条目', () => {
     const sessions = [
       desk({ id: 'ses_a', engineSessionId: CLI_ID }),

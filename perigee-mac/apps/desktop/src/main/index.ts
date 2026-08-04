@@ -57,7 +57,7 @@ import {
   wireBus,
   flushDeltaBroadcast,
   enqueueDeltaBroadcast,
-  hasPendingDeltaBroadcast
+  clearDeltaBroadcast
 } from './wire-bus.js'
 import { registerIpc } from './ipc/register.js'
 
@@ -174,9 +174,14 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => mainWindow?.show())
+  // 关窗立刻停 delta 批合，避免 webContents 已毁仍 send
+  mainWindow.on('closed', () => {
+    clearDeltaBroadcast()
+    mainWindow = null
+  })
   // 超时仍显示，避免卡在不可见窗口；真黑屏时至少看得到窗
   setTimeout(() => {
-    if (mainWindow && !mainWindow.isVisible()) mainWindow.show()
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) mainWindow.show()
   }, 1500)
 
   mainWindow.webContents.on('did-fail-load', (_e, code, desc, url) => {
@@ -203,8 +208,17 @@ function createWindow(): void {
   void settings
 }
 
+/** 安全广播：窗/webContents 已毁时静默跳过（防 stream 中关窗弹 Object has been destroyed） */
 function broadcast(channel: string, payload: unknown): void {
-  mainWindow?.webContents.send(channel, payload)
+  const win = mainWindow
+  if (!win || win.isDestroyed()) return
+  const wc = win.webContents
+  if (!wc || wc.isDestroyed()) return
+  try {
+    wc.send(channel, payload)
+  } catch {
+    /* destroyed race */
+  }
 }
 
 /** diff 推送：只发元数据，避免 before/after 全文 IPC（审计 C2-03） */
@@ -536,17 +550,17 @@ function buildMenu(): void {
         {
           label: '打开文件夹…',
           accelerator: 'CmdOrCtrl+O',
-          click: () => mainWindow?.webContents.send('menu:open-workspace')
+          click: () => broadcast('menu:open-workspace', null)
         },
         {
           label: '命令面板',
           accelerator: 'CmdOrCtrl+K',
-          click: () => mainWindow?.webContents.send('menu:command-palette')
+          click: () => broadcast('menu:command-palette', null)
         },
         {
           label: '设置',
           accelerator: 'CmdOrCtrl+,',
-          click: () => mainWindow?.webContents.send('menu:settings')
+          click: () => broadcast('menu:settings', null)
         }
       ]
     },
@@ -556,11 +570,11 @@ function buildMenu(): void {
         {
           label: '新建会话',
           accelerator: 'CmdOrCtrl+N',
-          click: () => mainWindow?.webContents.send('menu:new-session')
+          click: () => broadcast('menu:new-session', null)
         },
         {
           label: '导出会话…',
-          click: () => mainWindow?.webContents.send('menu:export-session')
+          click: () => broadcast('menu:export-session', null)
         }
       ]
     },
@@ -660,7 +674,8 @@ app.on('before-quit', () => {
     /* */
   }
   try {
-    if (hasPendingDeltaBroadcast()) flushDeltaBroadcast()
+    // 先清空批合队列再 dispose，避免关窗后 timer 仍 fire
+    clearDeltaBroadcast()
   } catch {
     /* */
   }

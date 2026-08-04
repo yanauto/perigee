@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canSubmit, composerAction } from './composer-actions'
+import { canSubmit, composerAction, sessionBusy } from './composer-actions'
 
 describe('发送/停止互斥（T026-返修 3）', () => {
   it('空闲显示发送键，流式显示停止键——同一位置只有一个', () => {
@@ -20,6 +20,23 @@ describe('发送/停止互斥（T026-返修 3）', () => {
     expect(composerAction(busy)).toBe('stop')
     busy = false // turn.end
     expect(composerAction(busy)).toBe('send')
+  })
+})
+
+describe('sessionBusy：仅当前会话 + 乐观发送', () => {
+  it('首页 active=null → 不 busy（后台 stream 不挡新会话）', () => {
+    expect(sessionBusy(null, false)).toBe(false)
+    expect(sessionBusy(undefined, false)).toBe(false)
+  })
+  it('当前会话 streaming/tool/approval → busy', () => {
+    expect(sessionBusy({ status: 'streaming' }, false)).toBe(true)
+    expect(sessionBusy({ status: 'tool_running' }, false)).toBe(true)
+    expect(sessionBusy({ status: 'waiting_approval' }, false)).toBe(true)
+    expect(sessionBusy({ status: 'idle' }, false)).toBe(false)
+  })
+  it('pendingSend 单独也 busy', () => {
+    expect(sessionBusy(null, true)).toBe(true)
+    expect(sessionBusy({ status: 'idle' }, true)).toBe(true)
   })
 })
 

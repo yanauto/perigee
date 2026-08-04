@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { JSX } from 'react'
 import type { UsageStats } from '../../lib/perigee-api'
 import { displayModel, formatTokens } from '../../lib/format'
+import { getCachedUsage, setCachedUsage } from '../../lib/usage-stats-cache'
 import { useI18n, useT } from '../../i18n'
 import { ModelsChart } from './ModelsChart'
 
@@ -50,8 +51,9 @@ export function UsageDashboard({ enabled }: { enabled: boolean }): JSX.Element {
   const { lang } = useI18n()
   const [range, setRange] = useState<Range>('all')
   const [tab, setTab] = useState<Tab>('overview')
-  const [stats, setStats] = useState<UsageStats | null>(null)
-  const [allStats, setAllStats] = useState<UsageStats | null>(null)
+  /* 有进程内缓存则立刻出数，避免 Home remount 空白闪 */
+  const [stats, setStats] = useState<UsageStats | null>(() => getCachedUsage('all'))
+  const [allStats, setAllStats] = useState<UsageStats | null>(() => getCachedUsage('all'))
   const [failed, setFailed] = useState(false)
   /* 双 tab 等高：以「总览内容的自然高」为准动态测量（T022 钉死的 353px 在 tile 改造后偏高，
      总览底部多一条留白）。总览渲染时量一次，模型 tab 直接**固定**成这个高度。
@@ -60,19 +62,25 @@ export function UsageDashboard({ enabled }: { enabled: boolean }): JSX.Element {
   const bodyRef = useRef<HTMLDivElement>(null)
   const [overviewH, setOverviewH] = useState<number | null>(null)
 
-  /* 选中范围数据（tile / 模型图）：切 range 期间保留旧数据避免闪烁 */
+  /* 选中范围数据（tile / 模型图）：切 range 用缓存打底，后台静默刷新 */
   useEffect(() => {
     if (!enabled) return
+    const cached = getCachedUsage(range)
+    if (cached) {
+      setStats(cached)
+      setFailed(false)
+    }
     let alive = true
     window.perigee.stats
       .usage(range)
       .then((s) => {
         if (!alive) return
+        setCachedUsage(range, s)
         setStats(s)
         setFailed(false)
       })
       .catch(() => {
-        if (alive) setFailed(true)
+        if (alive && !getCachedUsage(range)) setFailed(true)
       })
     return () => {
       alive = false
@@ -82,11 +90,15 @@ export function UsageDashboard({ enabled }: { enabled: boolean }): JSX.Element {
   /* 热力图专用：固定拉一次 all（近 26 周长期节律，不随范围变化） */
   useEffect(() => {
     if (!enabled) return
+    const cached = getCachedUsage('all')
+    if (cached) setAllStats(cached)
     let alive = true
     window.perigee.stats
       .usage('all')
       .then((s) => {
-        if (alive) setAllStats(s)
+        if (!alive) return
+        setCachedUsage('all', s)
+        setAllStats(s)
       })
       .catch(() => {})
     return () => {

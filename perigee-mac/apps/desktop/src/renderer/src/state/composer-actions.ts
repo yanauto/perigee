@@ -17,6 +17,19 @@ export function composerAction(busy: boolean): ComposerAction {
   return busy ? 'stop' : 'send'
 }
 
+/**
+ * 是否拦发送：仅「当前绑定会话」在忙 / 乐观发送中。
+ * 首页 active=null 时为 false，后台会话 stream 不挡新会话。
+ */
+export function sessionBusy(
+  session: { status: string } | null | undefined,
+  pendingSend: boolean
+): boolean {
+  if (pendingSend) return true
+  if (!session) return false
+  return ['streaming', 'tool_running', 'waiting_approval'].includes(String(session.status))
+}
+
 export type SubmitGate = {
   /** 引擎在跑（wb.busy：streaming / tool_running / waiting_approval / 乐观发送中） */
   busy: boolean

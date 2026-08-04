@@ -28,14 +28,18 @@ export function resumedCliIds(sessions: readonly SessionRecord[]): Set<string> {
 /**
  * 过滤掉「已经有 Desktop 正式会话代表它」的外部 CLI 条目。
  * 没被恢复过的纯 CLI 会话**照常保留**（侧栏仍能看到并恢复它们）。
+ * @param forgottenCliIds 用户本进程已删的 CLI id（防删 Desktop 后 transcript 回魂成「恢复到 Desktop」）
  */
 export function dedupeCliSessions(
   cli: readonly ExternalCliSession[],
-  sessions: readonly SessionRecord[]
+  sessions: readonly SessionRecord[],
+  forgottenCliIds?: ReadonlySet<string> | null
 ): ExternalCliSession[] {
   const resumed = resumedCliIds(sessions)
-  if (resumed.size === 0) return cli as ExternalCliSession[]
-  return cli.filter((c) => !resumed.has(c.id))
+  if (resumed.size === 0 && (!forgottenCliIds || forgottenCliIds.size === 0)) {
+    return cli as ExternalCliSession[]
+  }
+  return cli.filter((c) => !resumed.has(c.id) && !forgottenCliIds?.has(c.id))
 }
 
 /**

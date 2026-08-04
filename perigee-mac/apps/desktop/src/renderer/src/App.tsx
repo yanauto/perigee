@@ -95,9 +95,11 @@ export function App() {
   const goHome = useCallback(() => {
     setRoutinesOpen(false)
     setRoutineId(null)
+    // 清 active：首页意图是「新会话」，busy 不得继承后台仍在 stream 的会话
+    wb.setActiveSession(null)
     setHomeMode(true)
     setHomeFocus((v) => v + 1)
-  }, [])
+  }, [wb.setActiveSession])
 
   /* Routines 导航：总览 / 详情（选中会话时自动退出，见 selectSession） */
   const goRoutines = useCallback((id: string | null = null) => {
