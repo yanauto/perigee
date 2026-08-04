@@ -10,6 +10,9 @@
 
 <img src="assets/screenshots/overview.png" alt="Perigee 同时运行五个 agent 会话,主面板展开一份架构评审报告" width="920">
 
+<!-- YOUTUBE_DEMO_PLACEHOLDER: 视频上线后替换为缩略图链接 -->
+🎬 **演示视频** —— 即将放在这里。
+
 </div>
 
 ---
@@ -36,6 +39,10 @@
 <img src="assets/screenshots/live-markdown.png" alt="移植状态报告在 agent 书写过程中实时渲染" width="860">
 
 *一份状态报告,agent 边写边渲染。*
+
+<img src="assets/screenshots/reader-panel.png" alt="写完的报告在内置阅读面板中打开,与对话并排显示" width="860">
+
+*写完的文档在内置阅读面板里打开,和对话并排看。*
 
 </div>
 

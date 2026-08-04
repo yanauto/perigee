@@ -10,6 +10,9 @@ A macOS desktop for running Grok agents — multiple sessions in one window, bui
 
 <img src="assets/screenshots/overview.png" alt="Perigee running five agent sessions; an architecture review report is open in the main pane" width="920">
 
+<!-- YOUTUBE_DEMO_PLACEHOLDER: replace with thumbnail link once the video is up -->
+🎬 **Demo video** — coming right here shortly.
+
 </div>
 
 ---
@@ -38,6 +41,10 @@ A macOS desktop for running Grok agents — multiple sessions in one window, bui
 <img src="assets/screenshots/live-markdown.png" alt="A porting-status report rendering in real time as the agent writes it" width="860">
 
 *A status report, rendered as the agent writes it.*
+
+<img src="assets/screenshots/reader-panel.png" alt="A finished report opened in the built-in reader panel, side by side with the conversation" width="860">
+
+*Finished documents open in the built-in reader panel, next to the conversation.*
 
 </div>
 
