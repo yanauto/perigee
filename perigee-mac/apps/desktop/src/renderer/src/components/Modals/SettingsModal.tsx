@@ -529,7 +529,7 @@ export function SettingsModal({
             {nav === 'dev' ? (
               <div className="set-section">
                 <SetRow
-                  name={t('GCU（agent 效应器）')}
+                  name={t('Flyby（agent 效应器）')}
                   desc={status ? (status.gcu.detail ?? '…') : t('探测中…')}
                 >
                   <span className="chip">
@@ -543,7 +543,7 @@ export function SettingsModal({
                   <Button
                     variant="ghost"
                     icon="refresh"
-                    data-tip={t('重新探测 GCU bridge 与扩展')}
+                    data-tip={t('重新探测 Flyby bridge 与扩展')}
                     onClick={() => {
                       void window.perigee.integrations.gcuStatus?.().then((g) => {
                         void window.perigee.integrations.status().then(setStatus)

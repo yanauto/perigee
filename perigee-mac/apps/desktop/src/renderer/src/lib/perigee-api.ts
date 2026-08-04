@@ -287,7 +287,7 @@ export type SkillEntry = {
   source: 'user' | 'bundled'
 }
 
-/** ADR 0010 · GCU 效应器探测 */
+/** ADR 0010 · Flyby 效应器探测（`gcu*` 标识符为历史名，绑定 MCP 注册名 grok-computer-use） */
 export type GcuProbe = {
   ok: boolean
   bridgeUp: boolean

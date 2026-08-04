@@ -172,7 +172,7 @@ export function summarizePermissionRequest(params: Record<string, unknown>): Per
   if (looksBrowser(kind, toolName, title)) {
     return {
       action: '浏览器操作',
-      detail: title || toolName || desc || 'Computer Use',
+      detail: title || toolName || desc || 'Flyby',
       toolName: classifyName,
       kind: kind || 'browser',
       paths

@@ -30,7 +30,7 @@
 - 不做 VS Code/Cursor 全量替代（不 fork 编辑器）  
 - 不在 v1 重写完整自研 agent runtime（先适配现有 Grok Build/API）  
 - 不做无人值守对外发言（守审批闸）  
-- 不把 GCU 浏览器自动化重写进 Desktop  
+- 不把 Flyby 浏览器自动化重写进 Desktop  
 
 ### 1.4 用户与场景
 
@@ -68,7 +68,7 @@
             ▼                  ▼                   ▼
      Engine Adapter      Tool Adapters        Integrations
      · GrokBuildAdapter  · FS / Git           · MCP servers
-     · GrokApiAdapter    · Shell/PTY          · GCU Bridge
+     · GrokApiAdapter    · Shell/PTY          · Flyby Bridge
      · (未来其它)        · PreviewProviders   · md-reader 协议
 ```
 
@@ -79,7 +79,7 @@
 | Renderer | 无 Node 直连 FS/网络随意权 | `contextIsolation: true`，仅 preload API |
 | Main / Host | FS、子进程、钥匙串 | 所有危险操作过 ApprovalGate |
 | Engine 子进程 | Grok CLI / agent | 工作目录限制在已信任 workspace（可扩展） |
-| MCP / GCU | 按配置 | 独立生命周期，UI 只显示状态与调用结果 |
+| MCP / Flyby | 按配置 | 独立生命周期，UI 只显示状态与调用结果 |
 
 ### 2.2 事件模型（对齐 OpenHands 思想）
 
@@ -127,7 +127,7 @@ interface AgentEngine {
 |----|------|------|
 | 桌面壳 | **Electron**（近期 LTS 线） | 与 Claude Desktop / AiderDesk 同构；PTY/子进程/生态成熟 |
 | 构建 | **electron-vite** + electron-builder | AiderDesk 同款路径，打包 macOS dmg/zip |
-| 语言 | **TypeScript** 全栈 | 一人 + AI 交付效率；与既有 GCU/插件 TS/JS 亲和 |
+| 语言 | **TypeScript** 全栈 | 一人 + AI 交付效率；与既有 Flyby/插件 TS/JS 亲和 |
 | UI | **React 19** + Vite | 复杂工作台组件生态 |
 | 样式 | CSS Modules 或 Tailwind + **设计 token** | 暗色优先、高密度 |
 | 组件基座 | Radix UI（无样式原语）+ 自研组件 | 漂亮可控，避免后台模板脸 |
@@ -231,7 +231,7 @@ Monorepo（pnpm workspace 推荐）方便契约包共享。
 |------|----------|
 | **Grok Build** | 主引擎适配；设置里配置 binary 路径与默认 flags |
 | **grok-md-reader** | ① 应用内 MdReaderPane 取代「必须外挂才好看」；② 保留/兼容 `open` 协议与资源；③ 插件在无 Desktop 时仍可 fallback |
-| **GCU** | MCP 或 HTTP Bridge 状态面板；工具结果在 ToolCards 展示 |
+| **Flyby** | MCP 或 HTTP Bridge 状态面板；工具结果在 ToolCards 展示 |
 | **Vitals / 慧** | 产品文档与灵感 #25 关联；运行时不强依赖 Vitals |
 | **钥匙与代理** | 遵守本机代理习惯；密钥 ask 级，不进 git |
 
@@ -308,8 +308,8 @@ Monorepo（pnpm workspace 推荐）方便契约包共享。
 
 ### 阶段 7 · 集成扩展面 — ✅
 
-**做**：MCP 配置 UI；GCU 状态；与 md-reader 协议兼容；导出会话。  
-**验收**：挂一个 MCP 或 GCU ping 在设置页可见；导出 md 可打开。
+**做**：MCP 配置 UI；Flyby 状态；与 md-reader 协议兼容；导出会话。  
+**验收**：挂一个 MCP 或 Flyby ping 在设置页可见；导出 md 可打开。
 
 ### 阶段 8 · 打包分发（私器） — ✅
 
@@ -360,7 +360,7 @@ Monorepo（pnpm workspace 推荐）方便契约包共享。
 | P2 | 首发引擎 | **优先 Grok Build 适配，API 兜底** | |
 | P3 | 包名/显示名 | Perigee / `com.yanauto.perigee` | |
 | P4 | 与 md-reader | **能力内化进 Desktop**，插件保留 fallback | |
-| P5 | 开源与否 | 先私器（同 GCU A 阶段），方案按可开源结构写 | |
+| P5 | 开源与否 | 先私器（同 Flyby A 阶段），方案按可开源结构写 | |
 | P6 | 是否现在闸门开工脚手架 | 拍板后阶段 0 | |
 
 ---

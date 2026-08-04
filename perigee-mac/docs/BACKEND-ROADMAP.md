@@ -45,7 +45,7 @@
 - 不重写 Grok agent loop / 不 fork vendor 业务逻辑  
 - 不做云端多租户、协作账号体系（私器优先）  
 - 不替代 Cursor/VS Code 全量编辑器  
-- 不把 GCU 浏览器自动化重做进 Desktop（MCP 接入即可）  
+- 不把 Flyby 浏览器自动化重做进 Desktop（MCP 接入即可）  
 - 不负责 UI 观感（Kimi）  
 - 第一波不做 Windows/Linux 完美（架构预留即可）
 
@@ -119,7 +119,7 @@
             ▼                               ▼
    EngineRouter                      Integrations
    · GrokAcpEngine (主)              · MCP 状态
-   · GrokHeadlessEngine (-p 降级)    · GCU Bridge 探测
+   · GrokHeadlessEngine (-p 降级)    · Flyby Bridge 探测
    · StubEngine (测)                 · 未来其它引擎
             │
             ▼
@@ -200,7 +200,7 @@
 ### 5.5 集成
 
 - MCP 配置只读展示 + 未来增删（与 Grok config 策略对齐）  
-- GCU Bridge ping 状态  
+- Flyby Bridge ping 状态  
 - 可选：md-reader 协议兼容  
 
 ### 5.6 质量与迭代基建

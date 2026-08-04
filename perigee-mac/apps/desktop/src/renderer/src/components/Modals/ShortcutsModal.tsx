@@ -43,7 +43,7 @@ export function ShortcutsModal({
             </div>
           ))}
           <div className="composer-hint" style={{ paddingTop: 10 }}>
-            {t('终端支持 PTY / shell-c / echo 三档；PTY 需 node-pty。预览用系统浏览器，与 GCU 分离。')}
+            {t('终端支持 PTY / shell-c / echo 三档；PTY 需 node-pty。预览用系统浏览器，与 Flyby 分离。')}
           </div>
         </div>
       </div>

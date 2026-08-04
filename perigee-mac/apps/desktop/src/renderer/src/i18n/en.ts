@@ -385,13 +385,13 @@ Object.assign(EN, {
   '真 PTY 需 node-pty 原生模块；当前未绑定时会提示并降级 shell-c':
     'A real PTY needs the node-pty native module; falls back to shell -c',
   /* 开发者页 */
-  'GCU（agent 效应器）': 'GCU (agent effector)',
+  'Flyby（agent 效应器）': 'Flyby (agent effector)',
   '探测中…': 'Probing…',
   '就绪': 'Ready',
   '无扩展': 'No extension',
   '离线': 'Offline',
   '重新探测': 'Probe again',
-  '重新探测 GCU bridge 与扩展': 'Probe the GCU bridge and extension again',
+  '重新探测 Flyby bridge 与扩展': 'Probe the Flyby bridge and extension again',
   '扩展': 'Extension',
   '已连': 'connected',
   '未连': 'not connected',
@@ -472,8 +472,8 @@ Object.assign(EN, {
   '发送 · 换行': 'Send · newline',
   '逐层关闭（弹层 → 面板/弹窗 → 右栏 → 取消流式）':
     'Close one layer at a time (popover → modal → right panel → cancel stream)',
-  '终端支持 PTY / shell-c / echo 三档；PTY 需 node-pty。预览用系统浏览器，与 GCU 分离。':
-    'The terminal has PTY / shell-c / echo modes; PTY needs node-pty. Preview opens in the system browser, separate from GCU.',
+  '终端支持 PTY / shell-c / echo 三档；PTY 需 node-pty。预览用系统浏览器，与 Flyby 分离。':
+    'The terminal has PTY / shell-c / echo modes; PTY needs node-pty. Preview opens in the system browser, separate from Flyby.',
   /* Diff 视图 */
   '暂无变更': 'No changes yet',
   '本轮没有文件变更；可能已被接受、打回，或该轮未触及文件。':

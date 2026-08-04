@@ -8,8 +8,8 @@
 | 源码写工具 | allow | deny | pending | allow |
 | 常见 FS（mkdir/touch/mv/cp） | allow | deny | pending | allow |
 | 危险 shell（rm -rf 等） | pending | deny | pending | allow |
-| GCU 动作 | pending | deny | pending | allow |
-| GCU 只读 | allow | allow | pending | allow |
+| Flyby 动作 | pending | deny | pending | allow |
+| Flyby 只读 | allow | allow | pending | allow |
 | 只读工具 | allow | allow | pending | allow |
 | path 越界写 | deny（path-guard） | deny | deny | deny |
 

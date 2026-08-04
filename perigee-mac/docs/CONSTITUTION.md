@@ -8,7 +8,7 @@
 ## C1 · 定位
 
 - **是**：**Perigee — Grok Build CLI 的原生 macOS 编排台**（Workbench）。  
-- **不是**：浏览器应用、终端 TUI 替代品、VS Code/Cursor 全量叉、GCU 重写。
+- **不是**：浏览器应用、终端 TUI 替代品、VS Code/Cursor 全量叉、Flyby 重写。
 
 ## C2 · 体验优先级
 
@@ -35,7 +35,7 @@
 | 项目 | 关系 |
 |------|------|
 | grok-md-reader | md 能力内化；插件作无 Desktop fallback |
-| grok-computer-use | 工具/MCP 接入，不吞并 |
+| Flyby（仓 `grok-computer-use`） | 工具/MCP 接入，不吞并 |
 | Grok Build TUI | 引擎与无 GUI 环境；体验主路径归 Desktop |
 | **perigee 轻根** | `~/workspace/myself/projects/perigee/`：跨平台共享区（第一版仅 README/指针，不放源码 monorepo） |
 | **perigee-mac** | 本仓路径（原 `grok-desktop` 目录迁入）；vitals id 仍为 `grok-desktop`；独立 git |

@@ -97,7 +97,7 @@ describe('§12.2b classifyToolPermission', () => {
     ).toBe('deny')
   })
 
-  it('GCU：accept_edits 动作 pending；只读 allow；plan 动作 deny；yolo allow', () => {
+  it('Flyby：accept_edits 动作 pending；只读 allow；plan 动作 deny；yolo allow', () => {
     expect(
       classifyToolPermission('accept_edits', { toolName: 'tabs_open' })
     ).toBe('pending')

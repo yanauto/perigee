@@ -80,7 +80,7 @@ const WRITE_TOOL_RE =
 const SHELL_TOOL_RE = /\b(bash|shell|run_terminal|run_command|execute|terminal|cmd|powershell)\b/i
 
 /**
- * GCU / Computer Use 工具（ADR 0010：高风险效应器）。
+ * Flyby 浏览器控制工具（ADR 0010：高风险效应器）。
  * 只读状态类 vs 会改浏览器状态的动作。
  */
 // 注意：browser_status 等以下划线连接，不能写 browser_\b（_ 后无词界）
@@ -138,8 +138,8 @@ export function isShellLikeTool(ctx: ToolPermissionContext): boolean {
  * | 源码写 | allow | deny | pending | allow |
  * | 常见 FS | allow | deny（改树）/ allow 只读 | pending | allow |
  * | 危险 shell | pending | deny | pending | allow |
- * | GCU 只读 | allow | allow | pending | allow |
- * | GCU 动作 | **pending** | deny | pending | allow |
+ * | Flyby 只读 | allow | allow | pending | allow |
+ * | Flyby 动作 | **pending** | deny | pending | allow |
  * | 只读 | allow | allow | pending | allow |
  */
 export function classifyToolPermission(
@@ -173,7 +173,7 @@ export function classifyToolPermission(
     return 'pending'
   }
 
-  // accept_edits：源码写可 auto；GCU 动作默认 pending（ADR 0010 高风险）
+  // accept_edits：源码写可 auto；Flyby 动作默认 pending（ADR 0010 高风险）
   if (cu) return cuRo ? 'allow' : 'pending'
   if (dangerous) return 'pending'
   if (writeLike) return 'allow'

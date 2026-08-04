@@ -1,8 +1,9 @@
 /**
- * GCU（Grok Computer Use）Host 侧保障（ADR 0010）。
+ * Flyby Host 侧保障（ADR 0010）。
  * - 解析 gcu-bridge 可执行路径（MCP 注入用）
  * - 探测 bridge HTTP + extension_connected
- * 不在此重写 Computer Use 引擎。
+ * 不在此重写浏览器控制引擎。
+ * 注：文件名与 `gcu*` 标识符是历史名，绑定外部注册名（MCP `grok-computer-use` / 可执行 `gcu-bridge`），随对方改名再一并动。
  */
 import { accessSync, constants, existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -107,7 +108,7 @@ export function resolveGcuBridgeCommand(settingsCommand?: string | null): {
 }
 
 /**
- * 将 settings.mcp.servers 中 GCU 项的 command 解析为绝对路径（便于 session/new）。
+ * 将 settings.mcp.servers 中 Flyby 项的 command 解析为绝对路径（便于 session/new）。
  */
 export type McpServerLike = {
   name: string

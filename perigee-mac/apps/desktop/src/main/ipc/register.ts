@@ -1057,7 +1057,7 @@ export function registerIpc(ctx: MainCtx): void {
       ptyAlive
     }
   })
-  /** 预览：系统浏览器打开 URL（≠ GCU） */
+  /** 预览：系统浏览器打开 URL（≠ Flyby） */
   ipcMain.handle('preview:open', async (_e, url: string) => {
     const { validatePreviewUrl } = await import('../preview-url.js')
     const v = validatePreviewUrl(url)

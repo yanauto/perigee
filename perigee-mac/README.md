@@ -1,6 +1,6 @@
 # Perigee for macOS
 
-**Perigee — Grok Build CLI 的原生 macOS 编排台**(Electron)。多会话编排 · 内置 computer use · 实时 markdown 渲染。
+**Perigee — Grok Build CLI 的原生 macOS 编排台**(Electron)。多会话编排 · 内置浏览器控制(Flyby) · 实时 markdown 渲染。
 
 ## 快速启动
 

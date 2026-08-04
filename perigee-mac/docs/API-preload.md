@@ -402,7 +402,7 @@ rebuildEngine(): Promise<{ ok; engineId?; engineModeActual? }>  // 显式重建�
 - **ADR 0011**：MCP / 权限基线以 **Grok CLI `~/.grok`** 为准（`grok mcp list|enable|disable`）；`settings.json` 仅壳字段权威。  
 - MCP：从 CLI 列表注入 `session/new.mcpServers`（含 env/headers）；启停写 **CLI** 并热更已活会话。  
 - 仅改 `model`：ACP 下 `session/set_model`（不杀进程）；持久默认模型不另起权威库。  
-- GCU：`status.gcu` 为 `GcuProbe`（`ok` 需 bridge↑ 且 extension_connected）。  
+- Flyby（`gcu*` 字段为历史名，绑定 MCP 注册名 `grok-computer-use`）：`status.gcu` 为 `GcuProbe`（`ok` 需 bridge↑ 且 extension_connected）。  
 - 权限：ask/yolo 写 `[ui] permission_mode`（ask / always-approve）；plan/accept_edits 会话级。  
 - **`setMcpEnabled`**：写 CLI（`grok mcp enable|disable` 或 toml）并 **`applyMcpServers` 热更**已活 ACP 会话；**不是**只改 Desktop settings（旧文档已废，见 ADR 0011）。  
 - 有会话级 MCP 白名单（如 Routine）时，热更只刷新白名单交集，不全量灌入。

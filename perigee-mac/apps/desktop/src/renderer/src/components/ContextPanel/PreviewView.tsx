@@ -1,7 +1,7 @@
 import { useEffect, useState, type JSX } from 'react'
 import { Icon } from '../ui'
 
-/** 预览：系统浏览器打开 URL（≠ GCU Computer Use），记 lastPreviewUrl */
+/** 预览：系统浏览器打开 URL（≠ Flyby 浏览器控制），记 lastPreviewUrl */
 export function PreviewView(): JSX.Element {
   const [url, setUrl] = useState('http://127.0.0.1:3000')
   const [msg, setMsg] = useState<string | null>(null)
@@ -40,7 +40,7 @@ export function PreviewView(): JSX.Element {
       }}
     >
       <p style={{ color: 'var(--tx-3)', fontSize: 12 }}>
-        在系统浏览器查看 localhost / https 页面。Agent 操控 Chrome 请用 GCU，不是这个面板。
+        在系统浏览器查看 localhost / https 页面。Agent 操控 Chrome 请用 Flyby，不是这个面板。
       </p>
       <div style={{ display: 'flex', gap: 8 }}>
         <input

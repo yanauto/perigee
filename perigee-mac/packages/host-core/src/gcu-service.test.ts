@@ -20,7 +20,7 @@ describe('gcu-service', () => {
     rmSync(dir, { recursive: true, force: true })
   })
 
-  it('resolveMcpServersForAcp 保留非 GCU 项', () => {
+  it('resolveMcpServersForAcp 保留非 Flyby 项', () => {
     const out = resolveMcpServersForAcp([
       { name: 'other', command: 'echo', enabled: true },
       { name: 'grok-computer-use', command: 'gcu-bridge', enabled: false }

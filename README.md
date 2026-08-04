@@ -24,7 +24,7 @@ A native macOS orchestrator for Grok Build CLI — multi-session orchestration, 
 ### What it does
 
 - **Orchestrate** — run and steer multiple agent sessions from one cockpit. No more window juggling.
-- **Chrome control, built in** — your agents drive the browser through GCC (Grok Chrome Control, an MCP tool): open pages, read content, operate the web — supervised and permissioned.
+- **Chrome control, built in** — your agents drive the browser through Flyby (an MCP tool): open pages, read content, operate the web — supervised and permissioned.
 - **Live markdown** — agents write documents constantly; Perigee renders them as they land. Reports, plans, notes — readable at a glance.
 
 ### Quick start (macOS)
