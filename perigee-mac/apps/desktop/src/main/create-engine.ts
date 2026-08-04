@@ -12,6 +12,7 @@ import {
 } from '@perigee/host-core'
 import type { AgentEngine } from '@perigee/engine-protocol'
 import { resolveEngineBinary } from './security.js'
+import { CodexDeepSeekEngine } from './codex-deepseek-engine.js'
 import type { MainCtx, AgentConfigFromCli } from './ctx.js'
 
 /** ADR 0011：agent 侧配置来自 ~/.grok / grok mcp，非 settings.json */
@@ -47,6 +48,17 @@ export function createEngine(settings: AppSettings, ctx: MainCtx): AgentEngine {
   if (mode === 'stub') {
     ctx.engineModeActual = 'stub'
     return new StubEngine()
+  }
+  if (mode === 'codex-deepseek') {
+    ctx.engineModeActual = 'codex-deepseek'
+    return new CodexDeepSeekEngine({
+      codexBinary: settings.codexBinary,
+      apiKey: settings.deepseekApiKey,
+      model: settings.deepseekModel || 'deepseek-v4-flash',
+      sandbox: settings.codexSandbox,
+      approvalPolicy: settings.codexApprovalPolicy,
+      turnTimeoutMs: settings.turnTimeoutMs
+    })
   }
   const bin = resolveEngineBinary(settings.grokBinary)
   // ADR 0011：引擎权限基线以 CLI 为准；仅当用户在 Desktop 显式设为 yolo 时抬升
