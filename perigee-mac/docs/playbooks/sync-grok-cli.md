@@ -7,7 +7,7 @@
 ## 步骤
 
 ```bash
-cd ~/workspace/myself/projects/perigee/perigee-mac
+cd ~/projects/perigee/perigee-mac
 ./scripts/sync-grok-cli.sh
 git -C vendor/grok-build log -1 --oneline
 ```

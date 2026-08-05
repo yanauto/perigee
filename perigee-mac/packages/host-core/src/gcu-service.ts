@@ -25,12 +25,12 @@ export type GcuProbe = {
 
 const DEFAULT_BRIDGE_URL = 'http://127.0.0.1:19527'
 
-/** 常见 gcu-bridge 安装位置（维护者本机 + 相对仓） */
+/** 常见 gcu-bridge 安装位置（开发者本机 + 相对仓） */
 export function candidateGcuBridgePaths(): string[] {
   const home = homedir()
   const siblings = [
-    join(home, 'workspace/myself/projects/grok-computer-use/bridge/.venv/bin/gcu-bridge'),
-    join(home, 'workspace/myself/projects/grok-computer-use/bridge/.venv/bin/python')
+    join(home, 'projects/grok-computer-use/bridge/.venv/bin/gcu-bridge'),
+    join(home, 'projects/grok-computer-use/bridge/.venv/bin/python')
   ]
   return [
     process.env.GCU_BRIDGE_BIN,

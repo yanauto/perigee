@@ -22,7 +22,7 @@
 
 - UI 不直碰密钥与任意 FS；一律经 Host。  
 - Engine 可替换；事件 schema 版本化。  
-- 危险写与外发默认人审；审批闸适用于一切「以维护者名义开口」。  
+- 危险写与外发默认人审；对外发送人审适用于一切「以维护者名义开口」。  
 - 需求满配设计；施工按步骤验收，禁止用「MVP」裁掉 md/diff/多会话等脊梁能力。
 
 ## C4 · 平台
@@ -37,13 +37,13 @@
 | grok-md-reader | md 能力内化；插件作无 Desktop fallback |
 | Flyby（仓 `grok-computer-use`） | 工具/MCP 接入，不吞并 |
 | Grok Build TUI | 引擎与无 GUI 环境；体验主路径归 Desktop |
-| **perigee 轻根** | `~/workspace/myself/projects/perigee/`：跨平台共享区（第一版仅 README/指针，不放源码 monorepo） |
+| **perigee 轻根** | `~/projects/perigee/`：跨平台共享区（第一版仅 README/指针，不放源码 monorepo） |
 | **perigee-mac** | 本仓路径（原 `grok-desktop` 目录迁入）；vitals id 仍为 `grok-desktop`；独立 git |
 | **perigee-win** | Windows 平台工区（`../perigee-win`，vitals id=`perigee-win`，独立 git）；共享能力以本仓为源；**禁止无 ADR 整仓分叉** |
 
 ## C6 · 阶段纪律
 
-- 默认 **私器打磨**（第一用户=维护者），不以 star 为成功标准。  
+- 默认 **自用打磨**（第一用户=维护者本人），不以 star 为成功标准。  
 - 公开/开源另开决定，不默认。
 
 ## C7 · 成功一句话

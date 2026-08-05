@@ -6,7 +6,7 @@
 ## 前置
 
 ```bash
-cd ~/workspace/myself/projects/perigee/perigee-mac
+cd ~/projects/perigee/perigee-mac
 pnpm install
 pnpm run doctor   # 宜绿
 ```

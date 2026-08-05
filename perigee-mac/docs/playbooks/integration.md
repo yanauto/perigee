@@ -3,7 +3,7 @@
 > 需本机已安装并登录 Grok CLI（`~/.grok/bin/grok`）。
 
 ```bash
-cd ~/workspace/myself/projects/perigee/perigee-mac
+cd ~/projects/perigee/perigee-mac
 
 # ACP 握手 / 审批等
 GROK_INTEGRATION=1 pnpm --filter @perigee/app exec vitest run src/main/acp.integration.test.ts

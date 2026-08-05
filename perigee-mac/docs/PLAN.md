@@ -29,14 +29,14 @@
 - 不做浏览器主界面 / PWA 主路径  
 - 不做 VS Code/Cursor 全量替代（不 fork 编辑器）  
 - 不在 v1 重写完整自研 agent runtime（先适配现有 Grok Build/API）  
-- 不做无人值守对外发言（守审批闸）  
+- 不做无人值守对外发言（守对外发送人审）  
 - 不把 Flyby 浏览器自动化重写进 Desktop  
 
 ### 1.4 用户与场景
 
 | 角色 | 场景 |
 |------|------|
-| 维护者（首发唯一用户 / 私器） | 日常用 Grok 干活：读 md 报告、改代码、并行调研与施工会话 |
+| 维护者（首发唯一用户 / 自用工具） | 日常用 Grok 干活：读 md 报告、改代码、并行调研与施工会话 |
 | 未来可选 | 多引擎（Claude Code / 本地模型）同一壳——仅架构预留 |
 
 ---
@@ -232,7 +232,7 @@ Monorepo（pnpm workspace 推荐）方便契约包共享。
 | **Grok Build** | 主引擎适配；设置里配置 binary 路径与默认 flags |
 | **grok-md-reader** | ① 应用内 MdReaderPane 取代「必须外挂才好看」；② 保留/兼容 `open` 协议与资源；③ 插件在无 Desktop 时仍可 fallback |
 | **Flyby** | MCP 或 HTTP Bridge 状态面板；工具结果在 ToolCards 展示 |
-| **Vitals / 慧** | 产品文档与灵感 #25 关联；运行时不强依赖 Vitals |
+| **内部实况系统** | 产品文档与立项记录 关联；运行时不强依赖 Vitals |
 | **钥匙与代理** | 遵守本机代理习惯；密钥 ask 级，不进 git |
 
 ---
@@ -245,7 +245,7 @@ Monorepo（pnpm workspace 推荐）方便契约包共享。
 | Workspace 信任 | 首次打开目录确认；未信任则只读模式 |
 | 写盘 | 默认 diff 后应用；可选 auto-apply 仅限受信目录且显式打开 |
 | Shell | 高危模式列表（rm -rf、curl\|sh 等）强制审批 |
-| 外发（X/邮件等） | 默认禁用；若接工具必须人审（审批闸） |
+| 外发（X/邮件等） | 默认禁用；若接工具必须人审（对外发送人审） |
 | 更新 | 后期；签名公证走 macOS 常规 |
 | 遥测 | 默认关闭；无私自上传代码 |
 
@@ -311,7 +311,7 @@ Monorepo（pnpm workspace 推荐）方便契约包共享。
 **做**：MCP 配置 UI；Flyby 状态；与 md-reader 协议兼容；导出会话。  
 **验收**：挂一个 MCP 或 Flyby ping 在设置页可见；导出 md 可打开。
 
-### 阶段 8 · 打包分发（私器） — ✅
+### 阶段 8 · 打包分发（自用工具） — ✅
 
 **做**：electron-builder macOS arm64；图标；dmg/zip；公证按需。  
 **验收**：干净机器（或另一用户目录）安装后 S1–S5 剧本通过。
@@ -360,7 +360,7 @@ Monorepo（pnpm workspace 推荐）方便契约包共享。
 | P2 | 首发引擎 | **优先 Grok Build 适配，API 兜底** | |
 | P3 | 包名/显示名 | Perigee / `com.yanauto.perigee` | |
 | P4 | 与 md-reader | **能力内化进 Desktop**，插件保留 fallback | |
-| P5 | 开源与否 | 先私器（同 Flyby A 阶段），方案按可开源结构写 | |
+| P5 | 开源与否 | 先自用工具（同 Flyby A 阶段），方案按可开源结构写 | |
 | P6 | 是否现在闸门开工脚手架 | 拍板后阶段 0 | |
 
 ---
@@ -368,7 +368,7 @@ Monorepo（pnpm workspace 推荐）方便契约包共享。
 ## 13. 下一步（拍板后立刻）
 
 1. 你回复 §12 拍板（可「全部按建议」）  
-2. 灵感 #25 → incubate/go（你点头后）  
+2. 立项记录 → incubate/go（你点头后）  
 3. 阶段 0：monorepo + 空壳窗口 + 事件包  
 4. 并行：Grok Build 可观测协议探针（只读调研，出 `docs/decisions/`）  
 
