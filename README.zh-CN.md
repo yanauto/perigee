@@ -27,7 +27,7 @@
 
 ### 能做什么
 
-- **多会话** —— 几个 agent 会话并排跑,侧栏能看到每个在干什么,随时切过去。
+- **多会话** —— 几个 agent 会话并排跑；侧栏的未读、预览、输入草稿在后台会话上也会跟着更新，随时切过去。
 - **内置浏览器控制** —— agent 通过 Flyby(MCP 工具)驱动 Chrome:打开页面、读取内容、操作网页,每一步都看得到,且有权限确认。
 - **实时 Markdown** —— agent 写的文档一边生成一边渲染;写完的文档在内置阅读面板里直接看。
 
@@ -49,6 +49,10 @@
 
 ### 快速开始(macOS)
 
+**安装应用**（Apple Silicon）：下载 **[Perigee 0.3.0](https://github.com/yanauto/perigee/releases/tag/v0.3.0)**（`Perigee-0.3.0-arm64.dmg`），拖到 Applications。未签名；若系统拦截：`xattr -cr /Applications/Perigee.app`。发消息需要本机 Grok CLI 1.0.3+。
+
+从源码跑：
+
 ```bash
 git clone https://github.com/yanauto/perigee.git
 cd perigee/perigee-mac
@@ -57,8 +61,6 @@ pnpm dev
 ```
 
 **环境要求**:Node ≥ 20 · pnpm · 本机已安装官方 Grok Build CLI(没有也可用 Stub 模式先看 UI)。
-
-打包好的 .dmg 安装包后续提供,关注 [Releases](https://github.com/yanauto/perigee/releases) 页面。
 
 ### 目录结构
 

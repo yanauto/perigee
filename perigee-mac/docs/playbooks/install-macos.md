@@ -1,7 +1,16 @@
 # macOS 打包安装 Perigee（.app → /Applications）
 
-> 2026-08-01 真机打通：rebuild → pack → 安装 → 启动。  
+> 2026-08-13：正式包 **0.3.0** 已上 [GitHub Releases](https://github.com/yanauto/perigee/releases/tag/v0.3.0)。  
 > 平台：Apple Silicon；未签名（`identity: null`）。
+
+## 用户：从 Release 安装
+
+1. 下载 [`Perigee-0.3.0-arm64.dmg`](https://github.com/yanauto/perigee/releases/tag/v0.3.0)
+2. 打开 dmg，把 **Perigee** 拖到 Applications
+3. 若系统拦截：系统设置 → 隐私与安全性 → 仍要打开，或 `xattr -cr /Applications/Perigee.app`
+4. 发消息需要本机已登录的 Grok CLI 1.0.3+（`grok --version`）
+
+下面是**从源码自己打安装包**的步骤（维护者 / 改完要重打）。
 
 ## 前置
 

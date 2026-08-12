@@ -29,7 +29,7 @@ A macOS desktop for running Grok agents — multiple sessions in one window, bui
 
 ### What it does
 
-- **Multiple sessions** — run several agent sessions side by side. The sidebar shows what each one is doing; switch between them anytime.
+- **Multiple sessions** — run several agent sessions side by side. The sidebar stays in sync (unread, preview, drafts) even when a session is working in the background.
 - **Browser control, built in** — agents drive Chrome through Flyby (an MCP tool): open pages, read content, operate the web. Every step is visible and permission-gated.
 - **Live markdown** — agents write documents constantly; Perigee renders them as they're being written. Finished documents open in a built-in reader panel.
 
@@ -51,6 +51,10 @@ A macOS desktop for running Grok agents — multiple sessions in one window, bui
 
 ### Quick start (macOS)
 
+**Install the app** (Apple Silicon): download **[Perigee 0.3.0](https://github.com/yanauto/perigee/releases/tag/v0.3.0)** — `Perigee-0.3.0-arm64.dmg` — drag to Applications. Unsigned build; if macOS blocks it: `xattr -cr /Applications/Perigee.app`. Sending messages needs a local Grok CLI 1.0.3+.
+
+From source:
+
 ```bash
 git clone https://github.com/yanauto/perigee.git
 cd perigee/perigee-mac
@@ -59,8 +63,6 @@ pnpm dev
 ```
 
 **Requirements**: Node ≥ 20 · pnpm · the official Grok Build CLI installed locally (Stub mode lets you try the UI without it).
-
-Packaged .dmg releases are coming — watch the [Releases](https://github.com/yanauto/perigee/releases) page.
 
 ### Project layout
 
