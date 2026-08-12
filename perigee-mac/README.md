@@ -11,6 +11,8 @@
 
 若 Gatekeeper 拦截：`xattr -cr /Applications/Perigee.app`。发消息需要本机已登录的 Grok CLI 1.0.3+。
 
+0.3.0 更新说明：[CHANGELOG.md](../CHANGELOG.md)（根目录）。
+
 ## 快速启动
 
 ```bash

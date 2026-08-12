@@ -6,7 +6,7 @@
 
 A macOS desktop for running Grok agents — multiple sessions in one window, built-in browser control, live markdown rendering.
 
-[English](#english) · [简体中文](README.zh-CN.md) · [Website](https://perigee.yan-auto.me) · [@yanautome](https://x.com/yanautome)
+[English](#english) · [简体中文](README.zh-CN.md) · [Changelog](CHANGELOG.md) · [Website](https://perigee.yan-auto.me) · [@yanautome](https://x.com/yanautome)
 
 <img src="assets/screenshots/overview.png" alt="Perigee running five agent sessions; an architecture review report is open in the main pane" width="920">
 
@@ -63,6 +63,8 @@ pnpm dev
 ```
 
 **Requirements**: Node ≥ 20 · pnpm · the official Grok Build CLI installed locally (Stub mode lets you try the UI without it).
+
+What landed in 0.3.0 (handshake, multi-session sync, packaging) is in the **[Changelog](CHANGELOG.md)**.
 
 ### Project layout
 

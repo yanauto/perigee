@@ -6,7 +6,7 @@
 
 跑 Grok agents 的 macOS 桌面端 —— 多会话一个窗口 · 内置浏览器控制 · 实时 Markdown 渲染。
 
-[English](README.md) · [简体中文](#) · [官网](https://perigee.yan-auto.me) · [X @yanautome](https://x.com/yanautome)
+[English](README.md) · [简体中文](#) · [更新日志](CHANGELOG.md) · [官网](https://perigee.yan-auto.me) · [X @yanautome](https://x.com/yanautome)
 
 <img src="assets/screenshots/overview.png" alt="Perigee 同时运行五个 agent 会话,主面板展开一份架构评审报告" width="920">
 
@@ -61,6 +61,8 @@ pnpm dev
 ```
 
 **环境要求**:Node ≥ 20 · pnpm · 本机已安装官方 Grok Build CLI(没有也可用 Stub 模式先看 UI)。
+
+0.3.0 做了什么（握手、多会话同步、正式包）见 **[更新日志](CHANGELOG.md)**。
 
 ### 目录结构
 
