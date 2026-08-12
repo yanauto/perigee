@@ -4,7 +4,8 @@ import {
   MIN_PLOT_H,
   XLABEL_H,
   chartPlotHeight,
-  legendHeight
+  legendHeight,
+  modelChartBuckets
 } from './chart-metrics'
 
 /**
@@ -70,5 +71,26 @@ describe('chartPlotHeight（断环不变量）', () => {
     expect(legendHeight(0)).toBe(0)
     expect(legendHeight(1)).toBe(16 + 6)
     expect(legendHeight(3)).toBe(3 * 16 + 2 * 5 + 6)
+  })
+})
+
+describe('modelChartBuckets（范围 → 柱数）', () => {
+  const noon = new Date('2026-08-13T12:00:00')
+
+  it('7d 正好 7 根日柱', () => {
+    const b = modelChartBuckets('7d', noon)
+    expect(b).toHaveLength(7)
+    expect(b[0]!.days).toHaveLength(1)
+    expect(b[6]!.key).toBe('2026-08-13')
+  })
+
+  it('30d 正好 30 根日柱', () => {
+    expect(modelChartBuckets('30d', noon)).toHaveLength(30)
+  })
+
+  it('all 聚合 26 根周柱', () => {
+    const b = modelChartBuckets('all', noon)
+    expect(b).toHaveLength(26)
+    expect(b[0]!.days).toHaveLength(7)
   })
 })

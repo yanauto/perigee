@@ -22,6 +22,11 @@ export type ToolPermissionContext = {
   detail?: string
   /** 可解析到的路径线索 */
   paths?: string[]
+  /**
+   * grok 1.0.1+：工具自报是否只读。
+   * 有值时优先于名称启发式（受限 agent / subagent 更安全）。
+   */
+  isReadOnly?: boolean
 }
 
 /** client fs/write_text_file 是否允许静默落盘 */
@@ -113,9 +118,11 @@ export function isCommonFsCommand(text: string): boolean {
 }
 
 export function isReadonlyTool(ctx: ToolPermissionContext): boolean {
+  if (ctx.isReadOnly === true) return true
+  if (ctx.isReadOnly === false) return false
   const h = haystack(ctx)
   if (WRITE_TOOL_RE.test(h)) return false
-  if (ctx.kind && /read|search|explore/i.test(ctx.kind)) return true
+  if (ctx.kind && /read|search|explore|fetch|think/i.test(ctx.kind)) return true
   return READONLY_TOOL_RE.test(h)
 }
 
@@ -157,6 +164,13 @@ export function classifyToolPermission(
   const commonFs = shellLike && isCommonFsCommand(h) && !dangerous
   const cu = isComputerUseTool(ctx)
   const cuRo = isComputerUseReadonly(ctx)
+
+  // grok 1.0.1+ 工具自报只读：plan / accept_edits 可放行（仍不放行危险 CU 动作）
+  if (ctx.isReadOnly === true) {
+    if (cu) return cuRo ? 'allow' : policy === 'plan' ? 'deny' : 'pending'
+    if (dangerous) return policy === 'plan' ? 'deny' : 'pending'
+    return 'allow'
+  }
 
   if (policy === 'plan') {
     if (cu) return cuRo ? 'allow' : 'deny'

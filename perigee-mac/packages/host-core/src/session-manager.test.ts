@@ -167,3 +167,46 @@ describe('SessionManager · 边跑边纠正队列', () => {
     expect(sm.pendingSteerCount(rec.id)).toBe(0)
   })
 })
+
+describe('SessionManager · 焦点会话已读跟随', () => {
+  const ev = (sessionId: string, ts: string): SessionEvent => ({
+    type: 'assistant.message',
+    schemaVersion: 3,
+    sessionId,
+    id: 'am1',
+    ts,
+    text: 'hi'
+  })
+
+  it('markRead 后该会话上的活动把 lastReadAt 跟着推，attention 保持 read', async () => {
+    const stub = makeStubEngine()
+    const sm = new SessionManager(stub.engine, new EventBus())
+    const rec = await sm.create('/tmp/ws', { title: 't', lastReadAt: 1000 })
+    sm.markRead(rec.id, 1000)
+    stub.emit(ev(rec.id, '2026-08-13T00:00:05.000Z'))
+    const listed = sm.get(rec.id)!
+    expect(listed.lastReadAt).toBe(listed.lastActivityAt)
+    expect(listed.attention).toBe('read')
+  })
+
+  it('blur 后活动变成 unread', async () => {
+    const stub = makeStubEngine()
+    const sm = new SessionManager(stub.engine, new EventBus())
+    const rec = await sm.create('/tmp/ws', { title: 't', lastReadAt: 1000 })
+    sm.markRead(rec.id, 1000)
+    sm.blur()
+    stub.emit(ev(rec.id, '2026-08-13T00:00:05.000Z'))
+    expect(sm.get(rec.id)!.attention).toBe('unread')
+  })
+
+  it('list 按 lastActivityAt 降序，markRead 不把旧会话抢到顶', async () => {
+    const stub = makeStubEngine()
+    const sm = new SessionManager(stub.engine, new EventBus())
+    const old = await sm.create('/tmp/ws', { title: 'old' })
+    await new Promise((r) => setTimeout(r, 5))
+    const hot = await sm.create('/tmp/ws', { title: 'hot' })
+    sm.markRead(old.id)
+    const ids = sm.list().map((s) => s.id)
+    expect(ids[0]).toBe(hot.id)
+  })
+})

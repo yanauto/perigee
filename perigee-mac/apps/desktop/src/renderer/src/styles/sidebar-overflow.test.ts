@@ -33,6 +33,7 @@ describe('侧栏横向溢出铁律（T026-返修 2）', () => {
   it('装用户内容的文本元素一律省略号截断', () => {
     for (const sel of [
       '.sb-item .si-title', // 会话行 / CLI 行标题
+      '.sb-item .si-preview', // 会话行后台预览
       '.sb-group-head .gh-name', // 分组名（含未分组）
       '.sb-routine-name', // Routines 行
       '.sb-username', // 底部用户名
@@ -49,7 +50,7 @@ describe('侧栏横向溢出铁律（T026-返修 2）', () => {
   })
 
   it('可伸缩文本容器有 min-width:0（否则 flex 最小内容宽度会把行撑开）', () => {
-    for (const sel of ['.sb-item .si-title', '.sb-group-head .gh-name', '.arch-main']) {
+    for (const sel of ['.sb-item .si-title', '.sb-item .si-text', '.sb-group-head .gh-name', '.arch-main']) {
       expect(block(sel), `${sel} 缺 min-width:0`).toContain('min-width: 0')
     }
   })

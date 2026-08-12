@@ -127,11 +127,61 @@ describe('mapExtSessionUpdate', () => {
   it('缺 id 不产出事件', () => {
     expect(mapExtSessionUpdate('ui', { sessionUpdate: 'subagent_spawned' })).toEqual([])
   })
+
+  it('models/update · mcp_initialized 顶层合成', () => {
+    const m = normalizeAcpNotification('_x.ai/models/update', {
+      sessionId: 'eng',
+      models: [{ id: 'grok-4' }]
+    })
+    expect(sessionUpdateTag(m!.update)).toBe('models_update')
+    const mapped = mapExtSessionUpdate('ui', m!.update)
+    expect(mapped[0]).toMatchObject({ type: 'lifecycle', name: 'models.update' })
+
+    const mcp = normalizeAcpNotification('_x.ai/mcp_initialized', { sessionId: 'eng' })
+    expect(sessionUpdateTag(mcp!.update)).toBe('mcp_initialized')
+    expect(mapExtSessionUpdate('ui', mcp!.update)[0]).toMatchObject({
+      type: 'lifecycle',
+      name: 'mcp.initialized'
+    })
+  })
+
+  it('queue_changed / sessions_changed → lifecycle', () => {
+    const q = mapExtSessionUpdate('ui', {
+      sessionUpdate: 'queue_changed',
+      entries: [{ id: 'a' }, { id: 'b' }],
+      runningPromptId: 'p1',
+      runningText: 'follow up'
+    })
+    expect(q[0]).toMatchObject({
+      type: 'lifecycle',
+      name: 'queue.changed',
+      detail: { queued: 2, runningPromptId: 'p1' }
+    })
+    const n = normalizeAcpNotification('x.ai/queue/changed', {
+      sessionId: 'eng',
+      entries: []
+    })
+    expect(sessionUpdateTag(n!.update)).toBe('queue_changed')
+    const roster = mapExtSessionUpdate('ui', {
+      sessionUpdate: 'sessions_changed',
+      sessions: [{ sessionId: 'a' }]
+    })
+    expect(roster[0]).toMatchObject({
+      type: 'lifecycle',
+      name: 'sessions.changed',
+      detail: { count: 1 }
+    })
+  })
 })
 
 describe('isExtSessionUpdateTag', () => {
   it('识别扩展 tag', () => {
     expect(isExtSessionUpdateTag('subagent_spawned')).toBe(true)
+    expect(isExtSessionUpdateTag('queue_changed')).toBe(true)
+    expect(isExtSessionUpdateTag('sessions_changed')).toBe(true)
+    expect(isExtSessionUpdateTag('models_update')).toBe(true)
+    expect(isExtSessionUpdateTag('mcp_initialized')).toBe(true)
+    expect(isExtSessionUpdateTag('mcp_servers_updated')).toBe(true)
     expect(isExtSessionUpdateTag('agent_message_chunk')).toBe(false)
   })
 })

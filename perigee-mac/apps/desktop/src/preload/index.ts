@@ -95,6 +95,7 @@ const api = {
     contextInfo: (sessionId: string) =>
       ipcRenderer.invoke('session:contextInfo', sessionId),
     markRead: (sessionId: string) => ipcRenderer.invoke('session:markRead', sessionId),
+    blur: () => ipcRenderer.invoke('session:blur'),
     onEvent: (cb: (event: SessionEvent) => void) =>
       on('session:event', (e) => cb(e as SessionEvent)),
     onUpdated: (cb: (sessions: unknown) => void) =>

@@ -38,6 +38,11 @@ import {
   saveHistory,
   type HistoryNav
 } from '../../state/prompt-history'
+import {
+  clearComposerDraft,
+  loadComposerDraft,
+  stashComposerDraft
+} from '../../state/composer-drafts'
 import { canSubmit, composerAction } from '../../state/composer-actions'
 import { capabilityOf, fetchCommandCapabilities, type BridgeFeatures } from '../../state/features'
 import type { Workbench } from '../../state/useWorkbench'
@@ -150,13 +155,25 @@ export function Composer({
   /** effort 入口支持度：桥就绪 + capabilities 非 unsupported（未拉表前安全置灰） */
   const effortCapable = features.command && capabilityOf(cmdCaps, 'effort') !== 'unsupported'
   const effortEnabled = !!wb.activeSessionId && effortCapable
+  const draftRef = useRef(draft)
+  draftRef.current = draft
+  const prevSessionRef = useRef<string | null>(wb.activeSessionId)
 
   /* ---------- 一次性/订阅式数据 ---------- */
 
-  // 会话切换：载入该会话的提示词历史并退出历史浏览态
+  // 会话切换：暂存当前草稿、载入目标会话草稿与提示词历史
   useEffect(() => {
-    setHistEntries(wb.activeSessionId ? loadHistory(wb.activeSessionId) : [])
+    const prev = prevSessionRef.current
+    const next = wb.activeSessionId
+    if (prev && prev !== next) stashComposerDraft(prev, draftRef.current)
+    prevSessionRef.current = next
+    setDraft(next ? loadComposerDraft(next) : '')
+    setHistEntries(next ? loadHistory(next) : [])
     setHistNav(resetNav())
+    return () => {
+      const id = prevSessionRef.current
+      if (id) stashComposerDraft(id, draftRef.current)
+    }
   }, [wb.activeSessionId])
 
   // 工作区文件索引（@mention 与 + 附件选择器共用）
@@ -526,6 +543,8 @@ export function Composer({
       }
     }
     setHistNav(resetNav())
+    draftRef.current = ''
+    if (sid) clearComposerDraft(sid)
     setDraft('')
     setAttachments([])
     closeMenus()

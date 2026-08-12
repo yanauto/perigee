@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canSubmit, composerAction, sessionBusy } from './composer-actions'
+import { canSubmit, composerAction, sessionBusy, sessionCanCancel } from './composer-actions'
 
 describe('发送/停止互斥（T026-返修 3）', () => {
   it('空闲显示发送键，流式显示停止键——同一位置只有一个', () => {
@@ -37,6 +37,16 @@ describe('sessionBusy：仅当前会话 + 乐观发送', () => {
   it('pendingSend 单独也 busy', () => {
     expect(sessionBusy(null, true)).toBe(true)
     expect(sessionBusy({ status: 'idle' }, true)).toBe(true)
+  })
+})
+
+describe('sessionCanCancel：后台会话可从侧栏停止', () => {
+  it('streaming / tool_running 可停，idle / 审批不可从行菜单停', () => {
+    expect(sessionCanCancel('streaming')).toBe(true)
+    expect(sessionCanCancel('tool_running')).toBe(true)
+    expect(sessionCanCancel('waiting_approval')).toBe(false)
+    expect(sessionCanCancel('idle')).toBe(false)
+    expect(sessionCanCancel(undefined)).toBe(false)
   })
 })
 

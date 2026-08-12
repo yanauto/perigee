@@ -82,6 +82,36 @@ export function normalizeAcpNotification(
       update: { sessionUpdate: 'task_completed', ...p }
     }
   }
+  if (m === 'x.ai/queue/changed' || method.endsWith('queue/changed')) {
+    return {
+      engineSessionId,
+      update: { sessionUpdate: 'queue_changed', ...p }
+    }
+  }
+  if (m === 'x.ai/sessions/changed' || method.endsWith('sessions/changed')) {
+    return {
+      engineSessionId,
+      update: { sessionUpdate: 'sessions_changed', ...p }
+    }
+  }
+  if (m === 'x.ai/models/update' || method.endsWith('models/update')) {
+    return {
+      engineSessionId,
+      update: { sessionUpdate: 'models_update', ...p }
+    }
+  }
+  if (m === 'x.ai/mcp_initialized' || method.endsWith('mcp_initialized')) {
+    return {
+      engineSessionId,
+      update: { sessionUpdate: 'mcp_initialized', ...p }
+    }
+  }
+  if (m === 'x.ai/mcp/servers_updated' || method.endsWith('mcp/servers_updated')) {
+    return {
+      engineSessionId,
+      update: { sessionUpdate: 'mcp_servers_updated', ...p }
+    }
+  }
 
   return null
 }
@@ -207,6 +237,57 @@ export function mapExtSessionUpdate(
     ]
   }
 
+  if (kind === 'queue_changed') {
+    const entries = Array.isArray(update.entries) ? update.entries : []
+    return [
+      {
+        ...base,
+        type: 'lifecycle',
+        name: 'queue.changed',
+        detail: {
+          queued: entries.length,
+          runningPromptId: str(update.running_prompt_id ?? update.runningPromptId),
+          runningText: str(update.running_text ?? update.runningText)
+        }
+      }
+    ]
+  }
+
+  if (kind === 'sessions_changed') {
+    const sessions = Array.isArray(update.sessions)
+      ? update.sessions
+      : Array.isArray(update.entries)
+        ? update.entries
+        : []
+    return [
+      {
+        ...base,
+        type: 'lifecycle',
+        name: 'sessions.changed',
+        detail: { count: sessions.length }
+      }
+    ]
+  }
+
+  if (kind === 'models_update') {
+    return [
+      {
+        ...base,
+        type: 'lifecycle',
+        name: 'models.update',
+        detail: { models: update.models ?? update.modelList }
+      }
+    ]
+  }
+
+  if (kind === 'mcp_initialized') {
+    return [{ ...base, type: 'lifecycle', name: 'mcp.initialized' }]
+  }
+
+  if (kind === 'mcp_servers_updated') {
+    return [{ ...base, type: 'lifecycle', name: 'mcp.servers.updated' }]
+  }
+
   return []
 }
 
@@ -217,6 +298,11 @@ export function isExtSessionUpdateTag(tag: string): boolean {
     tag === 'subagent_progress' ||
     tag === 'subagent_finished' ||
     tag === 'task_backgrounded' ||
-    tag === 'task_completed'
+    tag === 'task_completed' ||
+    tag === 'queue_changed' ||
+    tag === 'sessions_changed' ||
+    tag === 'models_update' ||
+    tag === 'mcp_initialized' ||
+    tag === 'mcp_servers_updated'
   )
 }

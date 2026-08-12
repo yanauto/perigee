@@ -93,7 +93,8 @@ fi
 
 GROK_BIN="${GROK_BINARY:-$HOME/.grok/bin/grok}"
 if [[ -x "$GROK_BIN" ]]; then
-  echo "OK   grok binary executable ($GROK_BIN)"
+  grok_ver="$("$GROK_BIN" --version 2>/dev/null | head -n 1 || true)"
+  echo "OK   grok binary executable ($GROK_BIN)${grok_ver:+ · $grok_ver}"
   ok=$((ok + 1))
 else
   echo "WARN grok binary missing ($GROK_BIN) — engine headless 不可用"

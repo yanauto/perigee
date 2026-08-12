@@ -17,6 +17,8 @@ export function composerAction(busy: boolean): ComposerAction {
   return busy ? 'stop' : 'send'
 }
 
+const BUSY_STATUS = new Set(['streaming', 'tool_running', 'waiting_approval'])
+
 /**
  * 是否拦发送：仅「当前绑定会话」在忙 / 乐观发送中。
  * 首页 active=null 时为 false，后台会话 stream 不挡新会话。
@@ -27,7 +29,12 @@ export function sessionBusy(
 ): boolean {
   if (pendingSend) return true
   if (!session) return false
-  return ['streaming', 'tool_running', 'waiting_approval'].includes(String(session.status))
+  return BUSY_STATUS.has(String(session.status))
+}
+
+/** 侧栏 ⋮ 可停后台生成（审批走卡片，不从行菜单 cancel） */
+export function sessionCanCancel(status: string | undefined): boolean {
+  return status === 'streaming' || status === 'tool_running'
 }
 
 export type SubmitGate = {

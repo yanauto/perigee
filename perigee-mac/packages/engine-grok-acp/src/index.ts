@@ -52,6 +52,14 @@ import {
   normalizeAcpNotification,
   sessionUpdateTag
 } from './subagent-map.js'
+import {
+  PERIGEE_ACP_CLIENT_ID,
+  buildAuthenticateParams,
+  buildInitializeParams,
+  buildSessionNewParams,
+  parseAuthMethods,
+  pickAuthMethodId
+} from './handshake.js'
 
 export type { PermissionPolicy, DesktopMcpServer } from './permission-policy.js'
 export {
@@ -88,6 +96,16 @@ export {
   MEDIA_MAX_BYTES,
   type PromptCapabilities
 } from './prompt-blocks.js'
+export {
+  PERIGEE_ACP_CLIENT_ID,
+  PERIGEE_ACP_CLIENT_NAME,
+  PERIGEE_ACP_CLIENT_VERSION,
+  buildAuthenticateParams,
+  buildInitializeParams,
+  buildSessionNewParams,
+  parseAuthMethods,
+  pickAuthMethodId
+} from './handshake.js'
 
 export interface GrokAcpEngineOptions {
   binary?: string
@@ -184,7 +202,7 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
     this.binary = opts.binary ?? resolveGrokBinary()
     this.model = opts.model
     this.permissionPolicy = normalizePermissionPolicy(opts.permissionPolicy ?? 'ask')
-    this.clientVersion = opts.clientVersion ?? 'perigee/0.2.0'
+    this.clientVersion = opts.clientVersion ?? PERIGEE_ACP_CLIENT_ID
     this.mcpServers = opts.mcpServers ?? []
     this.onPermissionRequest = opts.onPermissionRequest
   }
@@ -875,21 +893,21 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
     try {
       const initResult = await rpc.request(
         'initialize',
-        {
-          protocolVersion: 1,
-          clientCapabilities: {
-            fs: { readTextFile: true, writeTextFile: true }
-          },
-          clientInfo: {
-            name: 'perigee',
-            version: this.clientVersion.replace(/^perigee\//, '')
-          }
-        },
+        buildInitializeParams({ clientVersion: this.clientVersion }),
         60_000
       )
       this.promptCapabilities = parsePromptCapabilities(initResult)
       // initialize._meta.modelState 含 totalContextTokens（T006 探针实证）
       this.applyModelsMeta(s, initResult)
+
+      const { methods, defaultAuthMethodId } = parseAuthMethods(initResult)
+      const methodId = pickAuthMethodId(methods, {
+        defaultAuthMethodId,
+        hasApiKeyEnv: Boolean(process.env.XAI_API_KEY?.trim())
+      })
+      if (methodId) {
+        await rpc.request('authenticate', buildAuthenticateParams(methodId), 60_000)
+      }
 
       const mcpSource = s.sessionMcpServers ?? this.mcpServers
       const mcpServers = buildAcpMcpServers(mcpSource)
@@ -924,12 +942,14 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
           }
         })
       } else {
+        const modelId = s.sessionModel || this.model
         const newResult = (await rpc.request(
           'session/new',
-          {
+          buildSessionNewParams({
             cwd: s.workspacePath,
-            mcpServers
-          },
+            mcpServers,
+            modelId
+          }),
           120_000
         )) as { sessionId?: string; models?: unknown }
 
@@ -1195,9 +1215,9 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
       const denyOptionId = pickDenyOptionId(params.options)
       // 人话摘要给 UI；分类器用原始 toolName/kind + 命令/路径正文（禁止 dump 整包 JSON）
       const summary = summarizePermissionRequest(params)
-      const { action, detail, toolName, kind, paths } = summary
+      const { action, detail, toolName, kind, paths, isReadOnly } = summary
       const policy = this.effectivePolicy(s)
-      const classifyCtx = { toolName, kind, detail, paths }
+      const classifyCtx = { toolName, kind, detail, paths, isReadOnly }
       const verdict = autoApprovesToolPermission(policy)
         ? 'allow'
         : classifyToolPermission(policy, classifyCtx)

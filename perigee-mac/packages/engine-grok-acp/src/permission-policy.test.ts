@@ -110,6 +110,27 @@ describe('§12.2b classifyToolPermission', () => {
     expect(classifyToolPermission('ask', { toolName: 'tabs_open' })).toBe('pending')
   })
 
+  it('grok 1.0.1 isReadOnly：plan/accept_edits 放行未知只读工具；ask 仍 pending', () => {
+    expect(
+      classifyToolPermission('accept_edits', {
+        toolName: 'obscure_stat',
+        isReadOnly: true
+      })
+    ).toBe('allow')
+    expect(
+      classifyToolPermission('plan', { toolName: 'obscure_stat', isReadOnly: true })
+    ).toBe('allow')
+    expect(
+      classifyToolPermission('ask', { toolName: 'obscure_stat', isReadOnly: true })
+    ).toBe('pending')
+    expect(
+      classifyToolPermission('plan', {
+        toolName: 'page_click',
+        isReadOnly: true
+      })
+    ).toBe('deny')
+  })
+
   it('危险 shell 启发式', () => {
     expect(isDangerousShell('rm -rf /tmp/x')).toBe(true)
     expect(isDangerousShell('git push --force origin main')).toBe(true)

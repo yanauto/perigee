@@ -69,9 +69,14 @@ export function mixEntries(
  * 四态状态点取值：T008 桥就绪用权威 attention 字段；
  * 未就绪回退 status 映射（无已读概念，空闲一律 read）。
  */
-export function attentionOf(s: SessionRecord): SessionAttention {
-  if (s.attention) return s.attention
-  if (s.status === 'waiting_approval' || s.status === 'error') return 'needs_input'
-  if (s.status === 'streaming' || s.status === 'tool_running') return 'working'
-  return 'read'
+export function attentionOf(s: SessionRecord, viewing = false): SessionAttention {
+  const att: SessionAttention = s.attention
+    ? s.attention
+    : s.status === 'waiting_approval' || s.status === 'error'
+      ? 'needs_input'
+      : s.status === 'streaming' || s.status === 'tool_running'
+        ? 'working'
+        : 'read'
+  if (viewing && att === 'unread') return 'read'
+  return att
 }

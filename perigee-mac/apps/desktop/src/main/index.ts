@@ -56,6 +56,7 @@ import {
 import {
   wireBus,
   flushDeltaBroadcast,
+  flushSessionListBroadcast,
   enqueueDeltaBroadcast,
   clearDeltaBroadcast
 } from './wire-bus.js'
@@ -674,7 +675,8 @@ app.on('before-quit', () => {
     /* */
   }
   try {
-    // 先清空批合队列再 dispose，避免关窗后 timer 仍 fire
+    // 先刷出未落盘的会话投影，再清空批合队列
+    flushSessionListBroadcast()
     clearDeltaBroadcast()
   } catch {
     /* */

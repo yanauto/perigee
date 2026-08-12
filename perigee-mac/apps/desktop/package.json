@@ -1,6 +1,6 @@
 {
   "name": "@perigee/app",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Perigee — a native macOS orchestrator for Grok Build CLI",
   "main": "./out/main/index.js",
@@ -94,6 +94,13 @@
       ],
       "identity": null,
       "hardenedRuntime": false
+    },
+    "dmg": {
+      "title": "Perigee",
+      "contents": [
+        { "x": 180, "y": 220, "type": "file" },
+        { "x": 420, "y": 220, "type": "link", "path": "/Applications" }
+      ]
     },
     "win": {
       "target": [

@@ -3,7 +3,7 @@
  */
 import { StubEngine } from '@perigee/engine-protocol'
 import { GrokBuildEngine } from '@perigee/engine-grok-build'
-import { GrokAcpEngine } from '@perigee/engine-grok-acp'
+import { GrokAcpEngine, PERIGEE_ACP_CLIENT_ID } from '@perigee/engine-grok-acp'
 import {
   loadGrokConfigSnapshot,
   toAcpMcpServers,
@@ -66,7 +66,7 @@ export function createEngine(settings: AppSettings, ctx: MainCtx): AgentEngine {
         binary: bin,
         model: settings.model || agent.model || undefined,
         permissionPolicy: enginePerm,
-        clientVersion: 'perigee/0.2.0',
+        clientVersion: PERIGEE_ACP_CLIENT_ID,
         mcpServers: agent.mcpServers,
         onPermissionRequest: (req) => {
           // T018：Routine 会话强制免询问（无人在场；与 session meta permissionPolicy=yolo 双保险）

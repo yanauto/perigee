@@ -291,6 +291,10 @@ export function registerIpc(ctx: MainCtx): void {
     }
     return { ok: !!rec }
   })
+  ipcMain.handle('session:blur', () => {
+    ctx.sessions.blur()
+    return { ok: true }
+  })
   /** T008/T011：用量聚合——token 以 usage-ledger 账本为准；messages/CLI 照旧 */
   ipcMain.handle('stats:usage', (_e, range?: UsageRange) => {
     const userData = app.getPath('userData')

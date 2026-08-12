@@ -74,6 +74,8 @@ export class SessionManager {
   private unsubEngine: (() => void) | null = null
   private steerQueues = new Map<string, string[]>()
   private draining = new Set<string>()
+  /** 渲染进程当前正在看的会话：活动时 lastReadAt 跟随，避免「看着也未读」 */
+  private focusedId: string | null = null
 
   constructor(
     private engine: AgentEngine,
@@ -90,7 +92,7 @@ export class SessionManager {
     }
     return all
       .map((s) => this.withAttention(s))
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      .sort((a, b) => (b.lastActivityAt ?? 0) - (a.lastActivityAt ?? 0))
   }
 
   get(id: string): SessionRecord | undefined {
@@ -98,17 +100,23 @@ export class SessionManager {
     return s ? this.withAttention(s) : undefined
   }
 
-  /** 用户查看会话时调用；持久化由 Host 层 upsert */
+  /** 用户查看会话时调用；持久化由 Host 层 upsert。同时设为焦点。 */
   markRead(sessionId: string, atMs?: number): SessionRecord | undefined {
     const cur = this.sessions.get(sessionId)
     if (!cur) return undefined
     const t = atMs ?? Date.now()
+    this.focusedId = sessionId
     this.sessions.set(sessionId, {
       ...cur,
       lastReadAt: t,
       updatedAt: nowIso()
     })
     return this.withAttention(this.sessions.get(sessionId)!)
+  }
+
+  /** 离开对话（回首页等）：停止已读跟随，后台回合结束可标未读 */
+  blur(): void {
+    this.focusedId = null
   }
 
   private withAttention(s: SessionRecord): SessionRecord {
@@ -416,6 +424,7 @@ export class SessionManager {
     this.steerQueues.delete(sessionId)
     this.sessions.delete(sessionId)
     this.bus.clearSession(sessionId)
+    if (this.focusedId === sessionId) this.focusedId = null
     return sideIds
   }
 
@@ -460,6 +469,7 @@ export class SessionManager {
     this.draining.clear()
     this.sessions.clear()
     this.tombstones.clear()
+    this.focusedId = null
     for (const id of ids) {
       try {
         void this.engine.disposeSession?.(id)
@@ -469,38 +479,49 @@ export class SessionManager {
     }
   }
 
+  private touchActivity(
+    sessionId: string,
+    actMs: number,
+    extra?: Partial<SessionRecord>
+  ): void {
+    const follow = this.focusedId === sessionId ? { lastReadAt: actMs } : {}
+    this.patch(sessionId, { lastActivityAt: actMs, ...follow, ...extra })
+  }
+
   private onEngineEvent(event: SessionEvent): void {
     // 已删除会话：丢弃事件（不 publish、不 patch），防 transcript/历史复活
     if (this.tombstones.has(event.sessionId)) return
 
     const actMs = toEpochMs(event.ts) ?? Date.now()
     if (event.type === 'session.status') {
-      this.patch(event.sessionId, {
-        status: event.status,
-        lastActivityAt: actMs
-      })
+      this.touchActivity(event.sessionId, actMs, { status: event.status })
       if (!isBusyStatus(event.status)) {
         void this.drainSteerQueue(event.sessionId)
       }
     } else if (event.type === 'error') {
-      this.patch(event.sessionId, { status: 'error', lastActivityAt: actMs })
+      this.touchActivity(event.sessionId, actMs, { status: 'error' })
     } else if (event.type === 'turn.end') {
       const engId =
         'engineSessionId' in event && typeof event.engineSessionId === 'string'
           ? event.engineSessionId
           : undefined
-      this.patch(event.sessionId, {
-        lastActivityAt: actMs,
-        ...(engId ? { engineSessionId: engId } : {})
-      })
+      this.touchActivity(
+        event.sessionId,
+        actMs,
+        engId ? { engineSessionId: engId } : undefined
+      )
     } else if (
       event.type === 'user.message' ||
       event.type === 'assistant.message' ||
       event.type === 'assistant.delta' ||
       event.type === 'tool.call' ||
-      event.type === 'approval.requested'
+      event.type === 'approval.requested' ||
+      event.type === 'turn.summary' ||
+      event.type === 'approval.resolved'
     ) {
-      this.patch(event.sessionId, { lastActivityAt: actMs })
+      this.touchActivity(event.sessionId, actMs)
+    } else if (event.type === 'lifecycle' && event.name === 'queue.changed') {
+      this.touchActivity(event.sessionId, actMs)
     }
     this.bus.publish(event)
   }

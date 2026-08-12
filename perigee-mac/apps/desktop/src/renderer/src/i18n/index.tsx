@@ -1,15 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { EN } from './en'
+import { isLang, resolveLangPref, type Lang } from './lang-pref'
 
 /**
  * i18n 基建（T013）：轻量方案 = Context + 文案表（不引重型库）。
  * - 默认中文；t(中文源串) 英文档查 EN 表，缺串回退中文。
  * - 持久化走 uiState('lang.pref')；localStorage 仅作首屏镜像。切换即时生效：纯 state，
  *   不刷新、不丢会话状态。各页面文案随 T014–T016 接入，T017 扫尾。
+ * - HMR / 重挂：本 renderer 的 localStorage 压过陈旧 uiState，避免界面被打回中文。
  */
 
-export type Lang = 'zh' | 'en'
+export type { Lang }
 
 export const LANG_LS_KEY = 'grok.lang.pref'
 export const LANG_UISTATE_KEY = 'lang.pref'
@@ -26,8 +28,6 @@ const I18nContext = createContext<I18nValue>({
   t: (s) => s
 })
 
-const isLang = (v: unknown): v is Lang => v === 'zh' || v === 'en'
-
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     try {
@@ -38,12 +38,29 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
   })
 
-  /* uiState 为真相源，就绪后覆盖镜像 */
+  /* uiState 为跨进程真相；HMR 重挂时 localStorage 镜像优先，避免陈旧 ui 把界面打回中文 */
   useEffect(() => {
     window.perigee?.uiState
       ?.get(LANG_UISTATE_KEY)
       .then((v) => {
-        if (isLang(v)) setLangState(v)
+        let ls: string | null = null
+        try {
+          ls = localStorage.getItem(LANG_LS_KEY)
+        } catch {
+          /* 静默 */
+        }
+        const r = resolveLangPref(ls, v)
+        setLangState(r.lang)
+        if (r.writeLs) {
+          try {
+            localStorage.setItem(LANG_LS_KEY, r.writeLs)
+          } catch {
+            /* 静默 */
+          }
+        }
+        if (r.writeUi) {
+          void window.perigee?.uiState?.set(LANG_UISTATE_KEY, r.writeUi).catch(() => {})
+        }
       })
       .catch(() => {})
   }, [])

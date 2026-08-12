@@ -11,6 +11,43 @@
  * 两个输入都不受图表自身高度影响 ⇒ 不可能自激。函数是纯的，可直接单测收敛性。
  */
 
+export type ModelChartRange = 'all' | '30d' | '7d'
+
+/** 范围 → 柱数（all 聚合 26 根周柱） */
+export const MODEL_CHART_BARS: Record<ModelChartRange, number> = {
+  all: 26,
+  '30d': 30,
+  '7d': 7
+}
+
+const pad2 = (n: number) => String(n).padStart(2, '0')
+const dayKey = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+const dayLabel = (key: string) => `${Number(key.slice(5, 7))}/${Number(key.slice(8, 10))}`
+
+/** 模型图柱桶：7d/30d 逐日，all = 近 182 天按周聚合 26 桶。纯函数，锁死柱数。 */
+export function modelChartBuckets(
+  range: ModelChartRange,
+  now: Date = new Date()
+): { key: string; label: string; days: string[] }[] {
+  const n = MODEL_CHART_BARS[range]
+  const today = new Date(now)
+  today.setHours(0, 0, 0, 0)
+  const dayCount = range === 'all' ? 26 * 7 : n
+  const keys: string[] = []
+  for (let i = dayCount - 1; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    keys.push(dayKey(d))
+  }
+  const out: { key: string; label: string; days: string[] }[] = []
+  const step = range === 'all' ? 7 : 1
+  for (let i = 0; i < keys.length; i += step) {
+    const days = keys.slice(i, i + step)
+    out.push({ key: days[0]!, label: dayLabel(days[days.length - 1]!), days })
+  }
+  return out
+}
+
 /** 图例一行的行高（.mc-legend-row min-height） */
 export const LEGEND_ROW_H = 16
 /** 图例行间距（.mc-legend gap） */

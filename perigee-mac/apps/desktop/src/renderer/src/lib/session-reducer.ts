@@ -195,12 +195,20 @@ export function reduceEvent(blocks: ChatBlock[], ev: SessionEvent): ChatBlock[] 
 
     case 'approval.resolved': {
       // 批准/拒绝后不保留任何审批记录（对话保持干净）
-      let idx = -1
-      for (let i = blocks.length - 1; i >= 0; i--) {
-        const b = blocks[i]
-        if (b.kind === 'approval' && b.status === 'pending') {
-          idx = i
-          break
+      const rid = ev.requestId
+      let idx = blocks.findIndex(
+        (b) =>
+          b.kind === 'approval' &&
+          b.status === 'pending' &&
+          (b.requestId === rid || b.id === rid)
+      )
+      if (idx < 0) {
+        for (let i = blocks.length - 1; i >= 0; i--) {
+          const b = blocks[i]
+          if (b.kind === 'approval' && b.status === 'pending') {
+            idx = i
+            break
+          }
         }
       }
       if (idx < 0) return blocks
@@ -215,6 +223,17 @@ export function reduceEvent(blocks: ChatBlock[], ev: SessionEvent): ChatBlock[] 
       ]
 
     case 'lifecycle': {
+      // grok 1.0 名册/队列/模型/MCP 同步：只驱动侧栏，不进聊天
+      if (
+        ev.name === 'queue.changed' ||
+        ev.name === 'sessions.changed' ||
+        ev.name === 'models.update' ||
+        ev.name === 'mcp.initialized' ||
+        ev.name === 'mcp.servers.updated' ||
+        ev.name === 'session.load.ok'
+      ) {
+        return blocks
+      }
       const d = ev.detail as {
         error?: string
         modelId?: string

@@ -3,7 +3,7 @@ import type { JSX } from 'react'
 import type { UsageStats } from '../../lib/perigee-api'
 import { displayModel, formatTokens } from '../../lib/format'
 import { useT } from '../../i18n'
-import { XLABEL_H, chartPlotHeight } from './chart-metrics'
+import { XLABEL_H, chartPlotHeight, modelChartBuckets } from './chart-metrics'
 
 /**
  * 模型 tab 堆叠柱状图（T014，对齐 claude-design 原型）：
@@ -15,13 +15,6 @@ import { XLABEL_H, chartPlotHeight } from './chart-metrics'
  */
 
 type Range = 'all' | '30d' | '7d'
-
-/** 范围 → 柱数（all 聚合 26 根周柱） */
-const BARS: Record<Range, number> = { all: 26, '30d': 30, '7d': 7 }
-
-const pad2 = (n: number) => String(n).padStart(2, '0')
-const dayKey = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
-const dayLabel = (key: string) => `${Number(key.slice(5, 7))}/${Number(key.slice(8, 10))}`
 
 /** 模型 id → 代际版本（无法解析 → null，归「其他」） */
 function generationOf(model: string): number[] | null {
@@ -88,24 +81,7 @@ export function ModelsChart({
   const hasMatrix = Array.isArray(stats.dailyByModel) && stats.dailyByModel.length > 0
 
   /* 柱桶：7d/30d = 逐日；all = 近 182 天按 7 天聚合 26 桶（与热力图同节奏） */
-  const buckets = useMemo(() => {
-    const n = BARS[range]
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const dayCount = range === 'all' ? 26 * 7 : n
-    const keys: string[] = []
-    for (let i = dayCount - 1; i >= 0; i--) {
-      const d = new Date(today)
-      d.setDate(d.getDate() - i)
-      keys.push(dayKey(d))
-    }
-    const out: { key: string; label: string; days: string[] }[] = []
-    for (let i = 0; i < keys.length; i += range === 'all' ? 7 : 1) {
-      const days = keys.slice(i, i + (range === 'all' ? 7 : 1))
-      out.push({ key: days[0]!, label: dayLabel(days[days.length - 1]!), days })
-    }
-    return out
-  }, [range])
+  const buckets = useMemo(() => modelChartBuckets(range), [range])
 
   /* 模型排序：「其他」（无代际）垫最底；代际越老越深、堆底部 */
   const { models, stacks } = useMemo(() => {

@@ -1,7 +1,8 @@
 /**
- * EventBus → transcript / IPC 广播接线；含流式 delta 批合。
+ * EventBus → transcript / IPC 广播接线；含流式 delta 批合与多会话 list 批合。
  */
 import type { SessionEvent } from '@perigee/event-schema'
+import { sessionListDirty, SESSION_LIST_FLUSH_MS } from '@perigee/host-core'
 import type { MainCtx } from './ctx.js'
 
 /** 流式 delta 广播批合：同 session+类型合并 text，降 IPC 风暴（审计 C2-01） */
@@ -12,6 +13,33 @@ const deltaBroadcastQ = new Map<
 let deltaBroadcastTimer: ReturnType<typeof setTimeout> | null = null
 /** wireBus 安装后赋值，供 flush 与 before-quit 使用 */
 let _broadcast: ((channel: string, payload: unknown) => void) | null = null
+let _ctx: MainCtx | null = null
+const dirtySessionIds = new Set<string>()
+let sessionListTimer: ReturnType<typeof setTimeout> | null = null
+
+export function flushSessionListBroadcast(): void {
+  sessionListTimer = null
+  const ctx = _ctx
+  if (!ctx) {
+    dirtySessionIds.clear()
+    return
+  }
+  const ids = [...dirtySessionIds]
+  dirtySessionIds.clear()
+  for (const id of ids) {
+    const rec = ctx.sessions.get(id)
+    if (rec) ctx.persistSession(rec)
+  }
+  ctx.broadcast('session:updated', ctx.sessions.list())
+}
+
+export function scheduleSessionListBroadcast(sessionId: string): void {
+  if (!sessionId) return
+  dirtySessionIds.add(sessionId)
+  if (!sessionListTimer) {
+    sessionListTimer = setTimeout(flushSessionListBroadcast, SESSION_LIST_FLUSH_MS)
+  }
+}
 
 export function flushDeltaBroadcast(): void {
   deltaBroadcastTimer = null
@@ -57,12 +85,19 @@ export function clearDeltaBroadcast(): void {
     clearTimeout(deltaBroadcastTimer)
     deltaBroadcastTimer = null
   }
+  if (sessionListTimer != null) {
+    clearTimeout(sessionListTimer)
+    sessionListTimer = null
+  }
   deltaBroadcastQ.clear()
+  dirtySessionIds.clear()
   _broadcast = null
+  _ctx = null
 }
 
 export function wireBus(ctx: MainCtx): void {
   _broadcast = (channel, payload) => ctx.broadcast(channel, payload)
+  _ctx = ctx
   ctx.bus.subscribe((event: SessionEvent) => {
     // 已删除会话：不写 transcript、不广播（SessionManager 墓碑已丢弃大部分；双闸）
     if (ctx.sessionStore?.isRemoved(event.sessionId) || ctx.sessions?.isForgotten(event.sessionId)) {
@@ -130,13 +165,16 @@ export function wireBus(ctx: MainCtx): void {
     }
 
     if (event.type === 'session.status' || event.type === 'error') {
-      ctx.broadcast('session:updated', ctx.sessions.list())
       if (event.type === 'session.status' && event.status === 'waiting_approval') {
         ctx.notify('Perigee', '会话等待审批')
       }
       if (event.type === 'error') {
         ctx.notify('Perigee', event.message.slice(0, 120))
       }
+    }
+
+    if (sessionListDirty(event)) {
+      scheduleSessionListBroadcast(event.sessionId)
     }
 
     // 回合结束：刷新 pending diff 的 after + 非焦点 OS 通知（B7）

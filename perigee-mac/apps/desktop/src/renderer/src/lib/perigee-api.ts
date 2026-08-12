@@ -392,6 +392,8 @@ export type PerigeeApi = {
     commandCapabilities: () => Promise<CommandCapability[]>
     /** T008：用户查看会话时标记已读（驱动 attention 归一） */
     markRead: (sessionId: string) => Promise<void>
+    /** 离开对话（回首页）：停止已读跟随 */
+    blur: () => Promise<void>
     get: (id: string) => Promise<SessionRecord | null>
     create: (title?: string) => Promise<SessionRecord>
     createSide: (parentSessionId: string) => Promise<SessionRecord>

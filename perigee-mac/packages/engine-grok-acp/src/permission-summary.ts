@@ -13,6 +13,8 @@ export type PermissionSummary = {
   toolName: string
   kind: string
   paths: string[]
+  /** grok 1.0.1+ 工具自报只读；未知则 undefined */
+  isReadOnly?: boolean
 }
 
 const CMD_KEYS = ['command', 'cmd', 'script', 'shell', 'code', 'bash', 'powershell'] as const
@@ -107,10 +109,25 @@ function looksWrite(kind: string, toolName: string): boolean {
 }
 
 function looksRead(kind: string, toolName: string): boolean {
-  if (/read|search|explore/i.test(kind)) return true
+  if (/read|search|explore|fetch|think/i.test(kind)) return true
   return /\b(read|read_file|read_text|list|ls|glob|grep|search|find|stat|cat|head|tail)\b/i.test(
     toolName
   )
+}
+
+function extractIsReadOnly(
+  toolCall: Record<string, unknown>,
+  params: Record<string, unknown>,
+  kind: string
+): boolean | undefined {
+  const meta = asRecord(toolCall._meta) ?? asRecord(params._meta)
+  if (meta) {
+    if (meta.isReadOnly === true || meta.is_read_only === true) return true
+    if (meta.isReadOnly === false || meta.is_read_only === false) return false
+  }
+  if (/^(read|search|fetch|think)$/i.test(kind)) return true
+  if (/^(edit|delete|move|execute)$/i.test(kind)) return false
+  return undefined
 }
 
 function looksBrowser(kind: string, toolName: string, title: string): boolean {
@@ -137,6 +154,8 @@ export function summarizePermissionRequest(params: Record<string, unknown>): Per
   const pathHint = extractPathHint(rawInput, paths)
   const desc = extractDescription(rawInput, toolCall)
   const classifyName = toolName || title || kind || 'tool'
+  const isReadOnly = extractIsReadOnly(toolCall, params, kind)
+  const ro = isReadOnly === undefined ? {} : { isReadOnly }
 
   if (looksShell(kind, toolName, title, command)) {
     const detail = command || title || desc || '（无命令详情）'
@@ -145,7 +164,8 @@ export function summarizePermissionRequest(params: Record<string, unknown>): Per
       detail,
       toolName: classifyName,
       kind: kind || 'execute',
-      paths
+      paths,
+      ...ro
     }
   }
 
@@ -155,7 +175,8 @@ export function summarizePermissionRequest(params: Record<string, unknown>): Per
       detail: pathHint || title || desc || '（无路径）',
       toolName: classifyName,
       kind: kind || 'edit',
-      paths: paths.length ? paths : pathHint ? [pathHint] : []
+      paths: paths.length ? paths : pathHint ? [pathHint] : [],
+      ...ro
     }
   }
 
@@ -165,7 +186,8 @@ export function summarizePermissionRequest(params: Record<string, unknown>): Per
       detail: pathHint || title || desc || '（无路径）',
       toolName: classifyName,
       kind: kind || 'read',
-      paths: paths.length ? paths : pathHint ? [pathHint] : []
+      paths: paths.length ? paths : pathHint ? [pathHint] : [],
+      ...ro
     }
   }
 
@@ -175,7 +197,8 @@ export function summarizePermissionRequest(params: Record<string, unknown>): Per
       detail: title || toolName || desc || 'Flyby',
       toolName: classifyName,
       kind: kind || 'browser',
-      paths
+      paths,
+      ...ro
     }
   }
 
@@ -192,7 +215,8 @@ export function summarizePermissionRequest(params: Record<string, unknown>): Per
     detail,
     toolName: classifyName,
     kind,
-    paths
+    paths,
+    ...ro
   }
 }
 
@@ -209,6 +233,7 @@ export function summarizeFsWrite(path: string, byteLength: number): PermissionSu
     detail: `${path} · ${size}`,
     toolName: 'write_text_file',
     kind: 'edit',
-    paths: [path]
+    paths: [path],
+    isReadOnly: false
   }
 }

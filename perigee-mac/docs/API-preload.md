@@ -167,7 +167,8 @@ Promise<{
 | `rename(sessionId, title)` | 重命名（持久化） |
 | `remove(sessionId)` | 删除会话（T030 物理删 transcript + 可选 CLI 联删；引擎 dispose **后台**，UI 立即消失） |
 | **`contextInfo(sessionId)`** | **T006**：上下文占比。见下表 |
-| **`markRead(sessionId)`** | **T008**：标记已读；`lastReadAt=now` 持久化进 sessions-meta；返回 `{ ok }` |
+| **`markRead(sessionId)`** | **T008**：标记已读；`lastReadAt=now` 持久化进 sessions-meta；该会话成为焦点（后续活动 lastReadAt 跟随，避免「看着也未读」）；返回 `{ ok }` |
+| **`blur()`** | 离开对话（回首页）：停止已读跟随，后台回合结束可标未读 |
 | `onEvent(cb)` | 实时 `SessionEvent`（`assistant.delta` / `thought.delta` 在主进程约 16ms 批合后推送） |
 | `onUpdated(cb)` | 会话列表变化 |
 

@@ -112,4 +112,10 @@ describe('attentionOf（既有行为回归）', () => {
     expect(attentionOf(desk({ status: 'streaming' }))).toBe('working')
     expect(attentionOf(desk({ status: 'idle' }))).toBe('read')
   })
+
+  it('正在看的会话：unread 显示为 read，working / needs_input 不变', () => {
+    expect(attentionOf(desk({ attention: 'unread' }), true)).toBe('read')
+    expect(attentionOf(desk({ attention: 'working' }), true)).toBe('working')
+    expect(attentionOf(desk({ attention: 'needs_input' }), true)).toBe('needs_input')
+  })
 })

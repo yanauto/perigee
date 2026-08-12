@@ -13,6 +13,10 @@ export {
   type AttentionInput
 } from './session-attention.js'
 export {
+  sessionListDirty,
+  SESSION_LIST_FLUSH_MS
+} from './session-list-sync.js'
+export {
   aggregateUsageStats,
   shouldCountCliSession,
   UNKNOWN_MODEL,

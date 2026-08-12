@@ -49,7 +49,10 @@ export function SessionRow({
   onArchive,
   onUnarchive,
   canMarkRead,
-  onMarkRead
+  onMarkRead,
+  preview,
+  canCancel,
+  onCancel
 }: {
   session: SessionRecord
   active: boolean
@@ -70,6 +73,11 @@ export function SessionRow({
   /** T008 已读追踪桥就绪才给「标记已读」 */
   canMarkRead: boolean
   onMarkRead: () => void
+  /** 后台会话最后一句/工具名；多会话同步用 */
+  preview?: string
+  /** 后台仍在生成时可从 ⋮ 停止，不必先切过去 */
+  canCancel?: boolean
+  onCancel?: () => void
 }) {
   const t = useT()
   const [editing, setEditing] = useState(false)
@@ -236,7 +244,7 @@ export function SessionRow({
     }
   }
 
-  const attention = attentionOf(session)
+  const attention = attentionOf(session, active)
   const run = (fn: () => void) => () => {
     menu.close()
     fn()
@@ -283,14 +291,17 @@ export function SessionRow({
           onBlur={(e) => commitRename(e.currentTarget.value)}
         />
       ) : (
-        <span
-          className={`si-title ${ATT_TITLE[attention]}`.trim()}
-          onDoubleClick={(e) => {
-            e.stopPropagation()
-            setEditing(true)
-          }}
-        >
-          {session.title || t('未命名会话')}
+        <span className="si-text">
+          <span
+            className={`si-title ${ATT_TITLE[attention]}`.trim()}
+            onDoubleClick={(e) => {
+              e.stopPropagation()
+              setEditing(true)
+            }}
+          >
+            {session.title || t('未命名会话')}
+          </span>
+          {preview ? <span className="si-preview">{preview}</span> : null}
         </span>
       )}
 
@@ -356,6 +367,11 @@ export function SessionRow({
                   {t('重命名')}
                   <span className="mi-hint">R</span>
                 </button>
+                {canCancel && onCancel ? (
+                  <button type="button" className="menu-item" onClick={run(onCancel)}>
+                    {t('停止生成')}
+                  </button>
+                ) : null}
                 {canMarkRead ? (
                   <button
                     type="button"

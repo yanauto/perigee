@@ -22,7 +22,12 @@ osascript -e 'quit app "Perigee"' 2>/dev/null || true
 # 2) 原生模块对齐当前 Electron
 pnpm --filter @perigee/app run rebuild:native
 
-# 3) 构建 + electron-builder --mac --dir
+# 3) 正式 .dmg（推荐分发）
+pnpm --filter @perigee/app run dist
+# 产物：apps/desktop/release/Perigee-0.3.0-arm64.dmg
+#       以及 zip / mac-arm64/Perigee.app
+
+# 3b) 仅 .app 目录（开发覆盖安装）
 pnpm --filter @perigee/app run pack
 # 产物：apps/desktop/release/mac-arm64/Perigee.app
 

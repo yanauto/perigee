@@ -34,6 +34,9 @@ import {
   type PendingSend
 } from './pending-send'
 import { sessionBusy } from './composer-actions'
+import { sessionIdsNeedingSeed } from './session-seed'
+import { lastActivityBySession } from './session-activity'
+import { sharedCwdCollisionCount } from './session-cwd'
 
 /**
  * 工作台总线：收口所有 window.perigee 订阅与状态。
@@ -81,6 +84,10 @@ export function useWorkbench() {
   } | null>(null)
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /** grok `_x.ai/sessions/changed`：侧栏重拉 CLI transcript 名册 */
+  const [cliRosterEpoch, setCliRosterEpoch] = useState(0)
+  /** grok MCP 就绪/名册变更：侧栏 MCP 计数 */
+  const [integrationsEpoch, setIntegrationsEpoch] = useState(0)
 
   const activeRef = useRef<string | null>(null)
   const seededRef = useRef<Set<string>>(new Set())
@@ -99,29 +106,7 @@ export function useWorkbench() {
   }, [blocksMap, activeSessionId, pendingSend])
 
   /** 每会话「最后动态」摘要：供侧栏队列显示 */
-  const lastActivity = useMemo(() => {
-    const m = new Map<string, string>()
-    for (const [sid, blocks] of blocksMap) {
-      for (let i = blocks.length - 1; i >= 0; i--) {
-        const b = blocks[i]
-        if (b.kind === 'tool') {
-          m.set(sid, `⚙ ${b.name}`)
-          break
-        }
-        if (b.kind === 'assistant' && b.text.trim()) {
-          const line = b.text.trim().split('\n')[0]
-          m.set(sid, line.length > 40 ? `${line.slice(0, 40)}…` : line)
-          break
-        }
-        if (b.kind === 'user') {
-          const line = b.text.trim().split('\n')[0]
-          m.set(sid, `你：${line.length > 36 ? `${line.slice(0, 36)}…` : line}`)
-          break
-        }
-      }
-    }
-    return m
-  }, [blocksMap])
+  const lastActivity = useMemo(() => lastActivityBySession(blocksMap), [blocksMap])
 
   const applyEvent = useCallback((ev: SessionEvent) => {
     setBlocksMap((prev) => {
@@ -150,6 +135,22 @@ export function useWorkbench() {
     if (ev.type === 'file.changed') setFileVersion((v) => v + 1)
     // 热路径失败 → 顶栏 banner（可观测，不只 lifecycle）
     if (ev.type === 'lifecycle') {
+      if (ev.name === 'sessions.changed') setCliRosterEpoch((n) => n + 1)
+      if (ev.name === 'mcp.initialized' || ev.name === 'mcp.servers.updated') {
+        setIntegrationsEpoch((n) => n + 1)
+      }
+      if (ev.name === 'models.update') {
+        void window.perigee?.integrations
+          ?.listModels()
+          .then((listed) => {
+            const id =
+              listed.defaultModel?.trim() ||
+              listed.models?.find((m) => m.isDefault)?.id?.trim() ||
+              ''
+            if (id) setCliDefaultModel(id)
+          })
+          .catch(() => {})
+      }
       const fail =
         ev.name === 'permission.set_mode.fail' ||
         ev.name === 'model.set.fail' ||
@@ -210,9 +211,14 @@ export function useWorkbench() {
     (id: string | null) => {
       activeRef.current = id
       setActiveSessionIdState(id)
-      if (id) void seedSession(id)
+      if (id) {
+        void seedSession(id)
+        void api.session.markRead(id).catch(() => {})
+      } else {
+        void api.session.blur?.().catch(() => {})
+      }
     },
-    [seedSession]
+    [seedSession, api]
   )
 
   /* ---------- 检查器 / 布局 pane ---------- */
@@ -362,11 +368,15 @@ export function useWorkbench() {
 
   const refreshSessions = useCallback(async () => {
     try {
-      setSessions(await api.session.list())
+      const list = await api.session.list()
+      setSessions(list)
+      for (const id of sessionIdsNeedingSeed(list, seededRef.current)) {
+        void seedSession(id)
+      }
     } catch {
       /* 未打开工作区等场景静默 */
     }
-  }, [api])
+  }, [api, seedSession])
 
   const refreshDiffs = useCallback(async () => {
     try {
@@ -393,9 +403,15 @@ export function useWorkbench() {
 
   const closeWorkspace = useCallback(async () => {
     await api.workspace.close()
+    seededRef.current.clear()
+    forgottenSessionIdsRef.current.clear()
     setSessions([])
     setActiveSession(null)
     setDiffs([])
+    setBlocksMap(new Map())
+    setNativeTasksMap(new Map())
+    setPendingSend(null)
+    setForgottenCliIds(new Set())
     closeInspector()
   }, [api, setActiveSession, closeInspector])
 
@@ -407,12 +423,11 @@ export function useWorkbench() {
       setBlocksMap((prev) => new Map(prev).set(rec.id, []))
       setActiveSession(rec.id)
       await refreshSessions()
-      // P0-23：同 cwd 并行无 worktree 时强警告
       const list = await api.session.list()
-      const peers = list.filter((s) => s.workspacePath === rec.workspacePath)
-      if (peers.length > 1) {
+      const n = sharedCwdCollisionCount(list, rec)
+      if (n > 1) {
         setError(
-          `警告：已有 ${peers.length} 个会话共享工作区「${rec.workspacePath}」。并行写文件可能互相覆盖；建议一次只让一个会话改盘，或等待 worktree 隔离（波次 B）。`
+          `警告：已有 ${n} 个会话共享工作区「${rec.workspacePath}」且未隔离 worktree。并行写文件可能互相覆盖。`
         )
       }
     } catch (e) {
@@ -524,12 +539,10 @@ export function useWorkbench() {
     if (open) setSettingsOpen(true)
   }, [])
 
-  const cancel = useCallback(async () => {
-    // 乐观发送窗口：先清 pending，否则主页停止键看起来无效（审计 Z7-03）
-    setPendingSend(null)
-    const id = activeRef.current
+  const cancel = useCallback(async (sessionId?: string) => {
+    const id = sessionId ?? activeRef.current
+    if (!sessionId) setPendingSend(null)
     if (!id) return
-    // 本地立刻封口流式块：去掉斜杠光标 / 思考脉冲（引擎 cancel 只改 status→idle，不发 turn.end）
     setBlocksMap((prev) => {
       const cur = prev.get(id)
       if (!cur) return prev
@@ -672,7 +685,11 @@ export function useWorkbench() {
       }),
       api.session.onUpdated((list) => {
         const dead = forgottenSessionIdsRef.current
-        setSessions(dead.size ? list.filter((s) => !dead.has(s.id)) : list)
+        const next = dead.size ? list.filter((s) => !dead.has(s.id)) : list
+        setSessions(next)
+        for (const id of sessionIdsNeedingSeed(next, seededRef.current)) {
+          void seedSession(id)
+        }
       }),
       api.session.onEvent(applyEvent),
       api.diff.onUpdated((list) => {
@@ -739,6 +756,8 @@ export function useWorkbench() {
     blocksFor,
     tasks,
     lastActivity,
+    cliRosterEpoch,
+    integrationsEpoch,
     busy,
     diffs,
     fileVersion,

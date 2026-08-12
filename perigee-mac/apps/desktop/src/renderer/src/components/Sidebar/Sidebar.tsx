@@ -24,6 +24,8 @@ import { Button, EmptyState, Icon } from '../ui'
 import { SessionRow } from './SessionRow'
 import { CliRow } from './CliRow'
 import { GroupHeader } from './GroupHeader'
+import { sessionRowLooksActive } from './session-row-active'
+import { sessionCanCancel } from '../../state/composer-actions'
 
 /** 用户名：从工作区绝对路径 /Users/<name>/ 推导（无用户名 API，这是唯一真实来源；取不到回退 null） */
 function usernameOf(workspace: string | null): string | null {
@@ -109,7 +111,7 @@ export function Sidebar({
     return () => {
       alive = false
     }
-  }, [features.cliSessions, wb.currentWorkspace, cliTick])
+  }, [features.cliSessions, wb.currentWorkspace, cliTick, wb.cliRosterEpoch])
 
   /* 导航计数真值：MCP = 已启用连接器数；Skills = skills 数组长度（缺省 → 整项隐藏，不摆假数字） */
   useEffect(() => {
@@ -125,7 +127,7 @@ export function Sidebar({
     return () => {
       alive = false
     }
-  }, [])
+  }, [wb.integrationsEpoch])
 
   const engineMode = wb.settings?.engineMode ?? 'acp'
   const resumable = features.resumeExternal && engineMode === 'acp'
@@ -264,7 +266,8 @@ export function Sidebar({
     <SessionRow
       key={`s:${s.id}`}
       session={s}
-      active={s.id === wb.activeSessionId}
+      /* Routines 总览打开时主栏不是对话：勿再高亮会话行，避免「侧栏会话已选 + 主栏 Routines」双焦点 */
+      active={sessionRowLooksActive(s.id, wb.activeSessionId, routinesActive)}
       onSelect={onSelectSession}
       onRename={wb.renameSession}
       onExport={exportOne}
@@ -278,6 +281,9 @@ export function Sidebar({
       onUnarchive={() => wb.unarchiveItem(s.id)}
       canMarkRead={features.readTracking}
       onMarkRead={() => markRead(s.id)}
+      preview={wb.lastActivity.get(s.id)}
+      canCancel={sessionCanCancel(s.status)}
+      onCancel={() => void wb.cancel(s.id)}
     />
   )
 
@@ -349,9 +355,12 @@ export function Sidebar({
           type="button"
           className="sb-search-btn"
           onClick={() => wb.setPaletteOpen(true)}
+          /* 窄侧栏放不下完整能力句；短占位 + tip 说清是命令/会话/文件全搜（C2 曾误写「仅会话」） */
+          data-tip={`${t('搜索命令、会话、文件…')} · ${modKey}K`}
+          aria-label={t('搜索命令、会话、文件…')}
         >
           <Icon name="search" size={13} />
-          <span className="sb-search-ph">{t('搜索会话…')}</span>
+          <span className="sb-search-ph">{t('搜索…')}</span>
           <kbd className="sb-kbd">{modKey}K</kbd>
         </button>
       </div>

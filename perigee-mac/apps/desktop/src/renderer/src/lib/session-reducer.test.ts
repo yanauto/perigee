@@ -230,4 +230,42 @@ describe('顺序稳定（T028）', () => {
     blocks = reduceEvent(blocks, ev({ type: 'assistant.message', id: 'am1', text: 'x' }))
     expect(blocks.filter((b) => b.kind === 'assistant')).toHaveLength(1)
   })
+
+  it('grok 1.0 名册/队列/模型 lifecycle 不进聊天（侧栏同步用，禁止刷屏）', () => {
+    let blocks = reduceEvent([], ev({ type: 'user.message', text: 'hi' }))
+    for (const name of [
+      'queue.changed',
+      'sessions.changed',
+      'models.update',
+      'mcp.initialized',
+      'mcp.servers.updated',
+      'session.load.ok'
+    ]) {
+      blocks = reduceEvent(blocks, ev({ type: 'lifecycle', name }))
+    }
+    expect(blocks).toHaveLength(1)
+    expect(blocks[0]?.kind).toBe('user')
+  })
+
+  it('失败类 lifecycle 仍进流', () => {
+    const blocks = reduceEvent([], ev({ type: 'lifecycle', name: 'model.set.fail', detail: { error: 'x' } }))
+    expect(blocks[0]).toMatchObject({ kind: 'system' })
+    expect((blocks[0] as { text: string }).text).toContain('模型热切失败')
+  })
+
+  it('两条 pending 审批：按 requestId 撤，不误删另一张', () => {
+    let blocks = reduceEvent(
+      [],
+      ev({ type: 'approval.requested', id: 'apr_a', requestId: 'apr_a', action: 'a', detail: 'a', risk: 'low' })
+    )
+    blocks = reduceEvent(
+      blocks,
+      ev({ type: 'approval.requested', id: 'apr_b', requestId: 'apr_b', action: 'b', detail: 'b', risk: 'low' })
+    )
+    expect(blocks.filter((b) => b.kind === 'approval')).toHaveLength(2)
+    blocks = reduceEvent(blocks, ev({ type: 'approval.resolved', requestId: 'apr_a', approved: true }))
+    const left = blocks.filter((b) => b.kind === 'approval')
+    expect(left).toHaveLength(1)
+    expect(left[0]).toMatchObject({ requestId: 'apr_b' })
+  })
 })

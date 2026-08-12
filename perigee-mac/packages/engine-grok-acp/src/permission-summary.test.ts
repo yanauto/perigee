@@ -70,6 +70,20 @@ describe('summarizePermissionRequest', () => {
     })
     expect(s.action).toBe('读取文件')
     expect(s.detail).toContain('README.md')
+    expect(s.isReadOnly).toBe(true)
+  })
+
+  it('execute kind 标 isReadOnly=false；_meta.isReadOnly 优先', () => {
+    const exec = summarizePermissionRequest(shellParams)
+    expect(exec.isReadOnly).toBe(false)
+    const flagged = summarizePermissionRequest({
+      toolCall: {
+        kind: 'other',
+        title: 'stat something',
+        _meta: { isReadOnly: true }
+      }
+    })
+    expect(flagged.isReadOnly).toBe(true)
   })
 
   it('未知工具不 dump 整包 params', () => {
