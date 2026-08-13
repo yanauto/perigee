@@ -24,5 +24,7 @@ describe('i18n EN 文案表', () => {
     expect(EN['跟随系统']).toBe('System')
     expect(EN['界面语言']).toBe('Interface language')
     expect(EN['连接器 MCP']).toBe('Connectors (MCP)')
+    expect(EN['打开引擎设置']).toBe('Open engine settings')
+    expect(EN['隔离工作区']).toBe('Isolate workspace')
   })
 })

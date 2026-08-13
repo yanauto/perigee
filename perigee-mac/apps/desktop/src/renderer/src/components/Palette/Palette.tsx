@@ -15,7 +15,8 @@ import {
 import { orderSessions } from '../../state/session-order'
 import { useEffectiveTheme, setThemePref } from '../../lib/theme'
 import type { CommandCapability, SkillEntry } from '../../lib/perigee-api'
-import { useT } from '../../i18n'
+import { useT, useI18n } from '../../i18n'
+import { localizeUiText } from '../../lib/localize-ui-text'
 import { Icon } from '../ui'
 
 /**
@@ -82,6 +83,7 @@ export function Palette({
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
   const t = useT()
+  const { lang } = useI18n()
   const effectiveTheme = useEffectiveTheme()
   const [skills, setSkills] = useState<SkillEntry[]>([])
   const [cmdCaps, setCmdCaps] = useState<CommandCapability[] | null>(null)
@@ -285,13 +287,13 @@ export function Palette({
       const support = features.command ? capabilityOf(cmdCaps, cmdName) : 'unsupported'
       const disabled = !features.command || !sid || support === 'unsupported'
       const hint = !features.command
-        ? '桥接中'
+        ? t('桥接中')
         : !sid
-          ? '无活动会话'
+          ? t('无活动会话')
           : support === 'unsupported'
             ? cmdName === 'rewind'
-              ? '引擎暂不支持'
-              : '不支持'
+              ? t('引擎暂不支持')
+              : t('不支持')
             : undefined
       return { id, group: 'Slash', title, sub, hint, disabled, run: runSlash(cmdName) }
     }
@@ -309,7 +311,10 @@ export function Palette({
         id: `session:${s.id}`,
         group: '会话',
         title: s.title,
-        sub: wb.lastActivity.get(s.id),
+        sub: (() => {
+          const preview = wb.lastActivity.get(s.id)
+          return preview ? localizeUiText(preview, lang) : undefined
+        })(),
         hint: s.id === wb.activeSessionId ? '当前' : i < 9 ? `⌘${i + 1}` : undefined,
         run: () => wb.setActiveSession(s.id)
       })
@@ -329,6 +334,7 @@ export function Palette({
   }, [
     wb,
     t,
+    lang,
     features.command,
     cmdCaps,
     skills,

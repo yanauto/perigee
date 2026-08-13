@@ -3,7 +3,7 @@
  * 契约字段名钉死；派生字段 nextRunAt 仅 list 返回，不持久化。
  */
 
-export type RoutineTriggerKind = 'daily' | 'weekly' | 'interval'
+export type RoutineTriggerKind = 'daily' | 'weekly' | 'interval' | 'cron'
 
 export interface RoutineTrigger {
   kind: RoutineTriggerKind
@@ -13,6 +13,8 @@ export interface RoutineTrigger {
   weekday?: number
   /** interval 用，分钟 */
   everyMinutes?: number
+  /** cron 用：5 字段（分 时 日 月 周） */
+  expr?: string
 }
 
 export type RoutineRunStatus = 'ok' | 'fail'

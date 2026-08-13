@@ -1,8 +1,8 @@
 /**
  * Routines 调度器（T018）
- * 应用运行期间到点触发；不补跑错过点；启停/编辑即时重排。
+ * 应用运行期间到点触发；启动时若错过上次触发，补跑一次再排下一档。
  */
-import { computeNextRunAt } from './routine-schedule.js'
+import { computeCatchUpAt, computeNextRunAt } from './routine-schedule.js'
 import { RoutineStore } from './routine-store.js'
 import {
   type Routine,
@@ -110,7 +110,7 @@ export class RoutineScheduler {
     }
     if (r.enabled) {
       const scheduled = this.nextFireAt.get(r.id)
-      if (scheduled != null && scheduled > now) {
+      if (scheduled != null) {
         view.nextRunAt = scheduled
       } else {
         const lastFire = r.runs[0]?.startedAt
@@ -173,6 +173,16 @@ export class RoutineScheduler {
     if (!r.enabled || !this.started) return
     const now = this.nowFn()
     const lastFire = r.runs[0]?.startedAt
+    const catchUp = computeCatchUpAt(r.triggers, now, lastFire)
+    if (catchUp != null) {
+      this.nextFireAt.set(r.id, now)
+      const timer = this.setTimeoutFn(() => {
+        this.timers.delete(r.id)
+        void this.onTimer(r.id)
+      }, 0)
+      this.timers.set(r.id, timer)
+      return
+    }
     const next = computeNextRunAt(r.triggers, now, lastFire)
     if (next == null) return
     this.nextFireAt.set(r.id, next)

@@ -71,3 +71,16 @@ export function resolveModelLabel(
 ): string {
   return displayModel(settingsModel) || displayModel(cliDefault) || ''
 }
+
+/** 跨会话菜单等处：把引擎 status 换成中文源串（再过 t()）。未知值原样返回。 */
+const SESSION_STATUS_ZH: Record<string, string> = {
+  streaming: '生成中',
+  tool_running: '工具运行中',
+  waiting_approval: '待审批',
+  idle: '空闲',
+  error: '出错'
+}
+
+export function sessionStatusLabel(status: string): string {
+  return SESSION_STATUS_ZH[status] ?? status
+}

@@ -4,6 +4,7 @@ import { looksLikePath } from '../../lib/paths'
 import { useT } from '../../i18n'
 import { Icon } from '../ui'
 import { TOOL_GRID } from './approval-flow'
+import { formatToolMeter } from '../../lib/tool-meter'
 
 type ToolBlock = Extract<ChatBlock, { kind: 'tool' }>
 
@@ -39,22 +40,14 @@ function summarize(args: unknown): string {
   }
 }
 
-function prettyArgs(args: unknown): string {
-  if (args == null) return '（无参数）'
+function prettyArgs(args: unknown, t: (s: string) => string): string {
+  if (args == null) return t('（无参数）')
   if (typeof args === 'string') return args
   try {
     return JSON.stringify(args, null, 2) ?? String(args)
   } catch {
     return String(args)
   }
-}
-
-/** 计量列内容：当前事件数据可诚实支持的只有结果行数（+/− 与耗时需 schema 扩展，见 T015 回执缺口） */
-function meterOf(block: ToolBlock): string {
-  if (block.status === 'running') return '…'
-  if (!block.result) return ''
-  const lines = block.result.split('\n').length
-  return `${lines} 行`
 }
 
 /**
@@ -75,7 +68,7 @@ export function ToolRow({
   const [open, setOpen] = useState(false)
   const t = useT()
   const summary = summarize(block.args)
-  const meter = meterOf(block)
+  const meter = formatToolMeter(block, t)
 
   const toggle = () => setOpen((v) => !v)
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -122,7 +115,7 @@ export function ToolRow({
       {open ? (
         <div className="tool-detail">
           <div className="td-label">{t('参数')}</div>
-          <pre>{prettyArgs(block.args)}</pre>
+          <pre>{prettyArgs(block.args, t)}</pre>
           <div className="td-label">{t('输出')}</div>
           <pre>{block.result ?? (block.status === 'running' ? t('执行中…') : t('（无输出）'))}</pre>
           <button type="button" className="td-panel" onClick={onOpenPanel}>

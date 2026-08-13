@@ -6,7 +6,9 @@ import { orderSessions } from './state/session-order'
 import { usePopover } from './lib/popovers'
 import { useEffectiveTheme, setThemePref } from './lib/theme'
 import { useI18n } from './i18n'
-import { IconButton } from './components/ui'
+import { localizeUiText } from './lib/localize-ui-text'
+import { IconButton, Button } from './components/ui'
+import { engineEchoing } from './lib/engine-health'
 import { Sidebar } from './components/Sidebar/Sidebar'
 import { ChatStream } from './components/Chat/ChatStream'
 import { Composer } from './components/Composer/Composer'
@@ -226,13 +228,28 @@ export function App() {
   /* T025 乐观导航：pendingSend 期间即便还没有 activeSessionId 也留在对话页（展示乐观消息 +
      等待态）；建会话失败时 clearPendingSend 会让这里自动退回首页。 */
   const showHome = (homeMode || !wb.activeSessionId) && !wb.pendingSend
+  const echoing = engineEchoing(wb.appInfo)
 
   return (
     <div className="app-shell">
-      {wb.error ? (
-        <div className="banner banner-error" role="alert">
-          <span>{wb.error}</span>
-          <IconButton tip={t('关闭')} icon="x" onClick={() => wb.setError(null)} />
+      {wb.error || echoing ? (
+        <div className="banner-stack">
+          {wb.error ? (
+            <div className="banner banner-error" role="alert">
+              <span>{localizeUiText(wb.error, lang)}</span>
+              <IconButton tip={t('关闭')} icon="x" onClick={() => wb.setError(null)} />
+            </div>
+          ) : null}
+          {echoing ? (
+            <div className="banner banner-warn" role="status">
+              <span>
+                {t('Grok CLI 未就绪，现在是本地回声。安装并登录 grok 后才能发真消息。')}
+              </span>
+              <Button variant="ghost" onClick={() => wb.openSettingsAt('engine')}>
+                {t('打开引擎设置')}
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -370,7 +387,7 @@ export function App() {
             />
           ) : (
             <>
-              <ChatStream wb={wb} />
+              <ChatStream wb={wb} onGoHome={goHome} />
               <Composer
                 wb={wb}
                 features={features}

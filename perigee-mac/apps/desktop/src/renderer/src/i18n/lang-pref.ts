@@ -20,5 +20,5 @@ export function resolveLangPref(ls: unknown, ui: unknown): LangPrefResolution {
     return { lang: ls }
   }
   if (isLang(ui)) return { lang: ui, writeLs: ui }
-  return { lang: 'zh' }
+  return { lang: 'en' }
 }

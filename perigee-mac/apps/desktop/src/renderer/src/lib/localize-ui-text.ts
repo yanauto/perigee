@@ -25,7 +25,19 @@ const PREFIXES: ReadonlyArray<readonly [string, string]> = [
   ['MCP 已热更（', 'MCP hot-reloaded ('],
   ['引擎事件：', 'Engine event: '],
   ['无法打开：', "Can't open: "],
-  ['已在系统浏览器打开 ', 'Opened in system browser ']
+  ['已在系统浏览器打开 ', 'Opened in system browser '],
+  ['本地回声 · 未连接 Grok。', 'Local echo · Grok is not connected.'],
+  ['你说：', 'You said: '],
+  ['等待审批 · ', 'Waiting for approval · '],
+  ['你：', 'You: '],
+  ['警告：已有 ', 'Warning: '],
+  ['系统打开失败：', 'Could not open in system app: '],
+  ['权限热切失败：', 'Permission hot-switch failed: '],
+  ['模型热切失败：', 'Model hot-switch failed: '],
+  ['MCP 热更失败：', 'MCP hot-reload failed: '],
+  ['命令执行失败：', 'Command failed: '],
+  ['命令暂不支持：', 'Command not supported: '],
+  ['跨会话投递失败：', 'Cross-session send failed: ']
 ]
 
 /** 片段：动态串中间仍可能残留的中文词 */
@@ -37,7 +49,17 @@ const FRAGMENTS: ReadonlyArray<readonly [string, string]> = [
   ['（可重建会话）', ' (recreate session)'],
   [' 项）', ' items)'],
   ['未知', 'unknown'],
-  ['操作', 'action']
+  ['操作', 'action'],
+  ['你说：', 'You said: '],
+  [
+    '请安装并登录本机 Grok CLI 后，才能发真消息。',
+    'Install and sign in to the local Grok CLI to send real messages.'
+  ],
+  [' 个会话共享工作区「', ' session(s) share workspace "'],
+  [
+    '」且未隔离 worktree。并行写文件可能互相覆盖。',
+    '" without worktree isolation. Parallel writes may overwrite each other.'
+  ]
 ]
 
 export function localizeUiText(text: string, lang: 'zh' | 'en'): string {

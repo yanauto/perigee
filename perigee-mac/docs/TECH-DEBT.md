@@ -1,17 +1,13 @@
 # 技术债登记（唯一真相源）
 
-> 更新：2026-08-01 · **v2.24 清偿后**  
-> 非债边界见 ADR 0012 · 进度 `vitals proj now perigee`
+> 更新：2026-08-13 · **T015-meter / T018-cron / T018-missed 清偿后**  
+> 非债边界见 ADR 0012 · 进度 `vitals proj now grok-desktop`
 
 ## 开放项
 
-| ID | 项 | 说明 |
-|----|-----|------|
-| T018-cron | Routines 不支持 cron 表达式 | T018 仅 daily/weekly/interval；产品以后要 cron 再开单 |
-| T018-missed | 应用未开时错过的触发不补跑 | 启动只重算 nextRunAt；是否补跑需产品拍板 |
-| T015-meter | 工作轨道 meter 缺 per-tool 行增删/耗时 | schema v3 tool 块无字段；需 schema 升版 + 引擎映射 + renderer，T021 明确不做，UI 批次后单独开单 |
+（无）
 
-## 已清（v2.24）
+## 已清（v2.24 + 2026-08-13）
 
 | ID | 项 | 处理 |
 |----|-----|------|
@@ -22,6 +18,9 @@
 | P-1 | 浅色主题 | 可用 dark/light 切换 |
 | P-2 | MD 代码高亮 | 已有 lightHighlight；文档确认 |
 | P-3 | 侧栏过滤 | 状态筛选 UI |
+| T015-meter | 工作轨道 per-tool 行增删/耗时 | renderer 从 unified diff 与 call/result 时间戳派生，不升 schema；`formatToolMeter` i18n |
+| T018-cron | Routines cron 表达式 | 5 字段（分 时 日 月 周）；周 0 与 7 = 周日；编辑页可填 `expr` |
+| T018-missed | 错过触发补跑 | 启动最多补跑一次；无 `lastFire` 不补跑（避免首次启用立刻开火） |
 
 ## 环境依赖（非开放债）
 

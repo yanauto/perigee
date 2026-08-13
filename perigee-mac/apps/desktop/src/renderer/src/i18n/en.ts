@@ -96,7 +96,7 @@ export const EN: Record<string, string> = {
   "放行全部": "Accept all",
   "还原此文件": "Revert file",
   "2 / 3 文件": "2 / 3 files",
-  "待审批": "pending",
+  "待审批": "Waiting for approval",
   "编辑 Routine": "Edit routine",
   "名称": "Name",
   "触发器": "Trigger",
@@ -656,4 +656,54 @@ Object.assign(EN, {
   '正在建立侧问会话…': 'Starting side chat…',
   '发送 · 独立 session · 关闭即弃': 'Send · independent session · discarded on close',
   '发送侧问': 'Send side chat'
+});
+
+/** 0.3.0 后用户视角薄切 */
+Object.assign(EN, {
+  'Grok CLI 未就绪，现在是本地回声。安装并登录 grok 后才能发真消息。':
+    'Grok CLI is not ready — this is a local echo. Install and sign in to grok to send real messages.',
+  '打开引擎设置': 'Open engine settings',
+  '工作区已打开': 'Workspace open',
+  '安装并登录 Grok CLI': 'Install and sign in to Grok CLI',
+  'Grok CLI 已就绪': 'Grok CLI is ready',
+  '隔离工作区': 'Isolate workspace',
+  '⌘N 回首页，输入并发送才会建会话':
+    '⌘N returns home — type and send to create a session',
+  '⌘N 回首页，输入并发送才会建会话…':
+    '⌘N returns home — type and send to create a session…',
+  '点「新建」或按 ⌘N 回首页，输入并发送才会建会话。':
+    'Click New or press ⌘N to go home, then type and send to start a session.',
+  '点「新建」或按 Ctrl+N 回首页，输入并发送才会建会话。':
+    'Click New or press Ctrl+N to go home, then type and send to start a session.',
+  '生成中': 'Generating',
+  '工具运行中': 'Tool running',
+  '空闲': 'Idle',
+  '出错': 'Error',
+  '等待审批': 'Waiting for approval',
+  '请查看附件': 'See attached files',
+  '命令执行失败': 'Command failed',
+  '命令暂不支持': 'Command not supported',
+  '未索引到工作区文件': 'No workspace files indexed',
+  '把当前输入投递到其他会话': 'Send this input to another session',
+  '未开启跨会话投递 —— 请先在「设置」中打开':
+    'Cross-session send is off — enable it in Settings',
+  '输入框为空：先输入要投递的内容': 'Composer is empty — type something first',
+  '没有其他可投递的会话': 'No other sessions to send to',
+  '贴图/拖放需 T005 桥接（桥接中）': 'Paste/drop needs the file bridge (still connecting)',
+  '贴图保存失败：桥未返回路径': 'Could not save image: bridge returned no path',
+  '贴图保存失败（桥异常）': 'Could not save image (bridge error)',
+  '部分拖放文件取路径失败': 'Could not get a path for some dropped files',
+  '请先打开工作区，再发送消息。': 'Open a workspace before sending.',
+  '行': 'lines',
+  '（无参数）': '(no arguments)',
+  'cron 表达式': 'cron expression',
+  'cron': 'cron',
+  '错过的触发会在下次打开应用时补跑一次': 'One missed run fires the next time you open the app',
+  '回退到更早轮次': 'Rewind to an earlier turn',
+  'MCP 服务器面板': 'MCP servers panel',
+  '<模型id>': '<model id>',
+  '[提示]': '[prompt]',
+  '[轮次]': '[turn]',
+  '[服务器]': '[server]',
+  '跨会话投递失败': 'Cross-session send failed'
 });

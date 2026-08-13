@@ -72,4 +72,17 @@ describe('RoutineStore', () => {
     expect(() => s.create({ ...baseInput, workspace: '' })).toThrow(/workspace/)
     rmSync(path, { force: true })
   })
+
+  it('cron 触发器持久化 expr', () => {
+    const path = tmpPath()
+    const s = new RoutineStore(path)
+    const r = s.create({
+      ...baseInput,
+      triggers: [{ kind: 'cron', expr: '0 9 * * 1' }]
+    })
+    expect(r.triggers).toEqual([{ kind: 'cron', expr: '0 9 * * 1' }])
+    const s2 = new RoutineStore(path)
+    expect(s2.get(r.id)?.triggers).toEqual([{ kind: 'cron', expr: '0 9 * * 1' }])
+    rmSync(path, { force: true })
+  })
 })

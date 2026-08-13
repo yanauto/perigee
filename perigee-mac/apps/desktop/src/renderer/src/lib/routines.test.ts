@@ -55,6 +55,11 @@ describe('describeTrigger（T018 三种触发器 → 人话）', () => {
     expect(describeTrigger({ kind: 'interval', everyMinutes: 90 }, 'en')).toBe('Every 90min')
   })
 
+  it('cron 保留表达式', () => {
+    expect(describeTrigger({ kind: 'cron', expr: '0 9 * * 1' })).toBe('cron 0 9 * * 1')
+    expect(describeTrigger({ kind: 'cron', expr: '*/15 * * * *' }, 'en')).toBe('cron */15 * * * *')
+  })
+
   it('缺字段不炸：daily 缺 time 回落 00:00', () => {
     expect(describeTrigger({ kind: 'daily' })).toBe('每天 00:00')
   })
@@ -130,9 +135,10 @@ describe('routineDotState（侧栏状态点）', () => {
 })
 
 describe('emptyTrigger', () => {
-  it('三种默认值合法', () => {
+  it('四种默认值合法', () => {
     expect(emptyTrigger('daily')).toEqual({ kind: 'daily', time: '09:00' })
     expect(emptyTrigger('weekly')).toEqual({ kind: 'weekly', time: '09:00', weekday: 1 })
     expect(emptyTrigger('interval')).toEqual({ kind: 'interval', everyMinutes: 60 })
+    expect(emptyTrigger('cron')).toEqual({ kind: 'cron', expr: '0 9 * * *' })
   })
 })

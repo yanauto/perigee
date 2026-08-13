@@ -46,20 +46,20 @@ import {
 import { canSubmit, composerAction } from '../../state/composer-actions'
 import { capabilityOf, fetchCommandCapabilities, type BridgeFeatures } from '../../state/features'
 import type { Workbench } from '../../state/useWorkbench'
-import { resolveModelLabel } from '../../lib/format'
+import { resolveModelLabel, sessionStatusLabel } from '../../lib/format'
 import { usePopover } from '../../lib/popovers'
 import { useT } from '../../i18n'
 import { Icon, IconButton } from '../ui'
 import { EffortPopover, type EffortLevel } from './EffortPopover'
 import { PermChip } from './PermChip'
-
-/** effort 档位 → chip 文字（r02 A2） */
-const EFFORT_LABEL: Record<EffortLevel, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High'
-}
 import { PlusMenu } from './PlusMenu'
+
+/** effort 档位 → 中文源串（过 t()） */
+function effortLabel(level: EffortLevel | null, t: (s: string) => string): string {
+  if (level === 'low') return t('低')
+  if (level === 'high') return t('高')
+  return t('中')
+}
 
 /** 权限四态（AppSettings.permissionPolicy） */
 const PERM_MODES: { id: PermissionPolicy; label: string }[] = [
@@ -475,7 +475,7 @@ export function Composer({
           if (res.status === 'error') {
             wb.setError(`/${cmd} 执行失败：${res.detail}`)
           } else if (res.status === 'unsupported') {
-            flashHint(`/${cmd} 暂不支持：${res.detail}`)
+            flashHint(`/${cmd} ${t('暂不支持')}：${res.detail}`)
           } else if (res.detail) {
             flashHint(res.detail)
           }
@@ -530,7 +530,7 @@ export function Composer({
     const mediaPaths = mediaPathsFromAttachments(attachments)
     const merged = mergeAttachmentsIntoDraft(draft, attachments)
     if (!merged && mediaPaths.length === 0) return
-    void wb.send(merged || '请查看附件', undefined, {
+    void wb.send(merged || t('请查看附件'), undefined, {
       mediaPaths: mediaPaths.length ? mediaPaths : undefined
     })
     // 提示词历史：按会话持久化
@@ -561,16 +561,16 @@ export function Composer({
     if (!hasImage) return // 纯文本粘贴不拦截
     e.preventDefault()
     if (!features.saveClipboardImage) {
-      flashHint('贴图/拖放需 T005 桥接（桥接中）')
+      flashHint(t('贴图/拖放需 T005 桥接（桥接中）'))
       return
     }
     void (async () => {
       try {
         const p = asPath(await t006().clipboard?.saveImage?.())
         if (p) addAttachment(p)
-        else flashHint('贴图保存失败：桥未返回路径')
+        else flashHint(t('贴图保存失败：桥未返回路径'))
       } catch {
-        flashHint('贴图保存失败（桥异常）')
+        flashHint(t('贴图保存失败（桥异常）'))
       }
     })()
   }
@@ -580,7 +580,7 @@ export function Composer({
     const files = Array.from(e.dataTransfer?.files ?? [])
     if (files.length === 0) return
     if (!features.filePathForDrop) {
-      flashHint('贴图/拖放需 T005 桥接（桥接中）')
+      flashHint(t('贴图/拖放需 T005 桥接（桥接中）'))
       return
     }
     void (async () => {
@@ -594,7 +594,7 @@ export function Composer({
           failed = true
         }
       }
-      if (failed) flashHint('部分拖放文件取路径失败')
+      if (failed) flashHint(t('部分拖放文件取路径失败'))
     })()
   }
 
@@ -609,9 +609,9 @@ export function Composer({
       try {
         const r = await window.perigee.session.sendCross(from, toId, text)
         if (r?.ok) setDraft('')
-        else wb.setError(`跨会话投递失败：${r?.reason ?? '未知原因'}`)
+        else wb.setError(`${t('跨会话投递失败')}：${r?.reason ?? t('未知原因')}`)
       } catch (err) {
-        wb.setError(`跨会话投递失败：${err instanceof Error ? err.message : String(err)}`)
+        wb.setError(`${t('跨会话投递失败')}：${err instanceof Error ? err.message : String(err)}`)
       }
     })()
   }
@@ -695,7 +695,7 @@ export function Composer({
   const placeholder = !wb.currentWorkspace
     ? t('先打开工作区，再派活…')
     : !wb.activeSessionId
-      ? t('先新建或选中一个会话（⌘N）…')
+      ? t('⌘N 回首页，输入并发送才会建会话…')
       : t('给 Grok 派活…') // r02 B4：placeholder 不带快捷键提示
 
   /* T026：模型名显示层去 -build；settings 空则回退 CLI 默认 id */
@@ -731,10 +731,10 @@ export function Composer({
                   ? !features.command || it.support === 'unsupported'
                   : features.command && it.support === 'unsupported'
                 const disabledHint = !features.command
-                  ? '桥接中'
+                  ? t('桥接中')
                   : it.label === 'rewind'
-                    ? '引擎暂不支持'
-                    : '不支持'
+                    ? t('引擎暂不支持')
+                    : t('不支持')
                 return (
                   <button
                     key={it.id}
@@ -753,8 +753,8 @@ export function Composer({
                       <span className="mi-hint">{disabledHint}</span>
                     ) : (
                       <>
-                        {it.description ? <span className="mi-hint">{it.description}</span> : null}
-                        {it.arg ? <span className="sm-arg">{it.arg}</span> : null}
+                        {it.description ? <span className="mi-hint">{t(it.description)}</span> : null}
+                        {it.arg ? <span className="sm-arg">{t(it.arg)}</span> : null}
                       </>
                     )}
                   </button>
@@ -795,7 +795,7 @@ export function Composer({
                 </button>
               ))}
             {menuMode === 'attach' && attachChoices.length === 0 && (
-              <div className="menu-label">未索引到工作区文件</div>
+              <div className="menu-label">{t('未索引到工作区文件')}</div>
             )}
           </div>
         )}
@@ -829,13 +829,13 @@ export function Composer({
 
         {crossOpen && (
           <div className="popover slash-menu" role="menu">
-            <div className="menu-label">把当前输入投递到其他会话</div>
+            <div className="menu-label">{t('把当前输入投递到其他会话')}</div>
             {!wb.settings?.crossSessionSendEnabled ? (
-              <div className="menu-label">未开启跨会话投递 —— 请先在「设置」中打开</div>
+              <div className="menu-label">{t('未开启跨会话投递 —— 请先在「设置」中打开')}</div>
             ) : !draft.trim() ? (
-              <div className="menu-label">输入框为空：先输入要投递的内容</div>
+              <div className="menu-label">{t('输入框为空：先输入要投递的内容')}</div>
             ) : crossTargets.length === 0 ? (
-              <div className="menu-label">没有其他可投递的会话</div>
+              <div className="menu-label">{t('没有其他可投递的会话')}</div>
             ) : (
               crossTargets.map((s) => (
                 <button
@@ -849,7 +849,7 @@ export function Composer({
                 >
                   <Icon name="message" size={13} />
                   <span>{s.title || s.id.slice(0, 8)}</span>
-                  <span className="mi-hint">{String(s.status)}</span>
+                  <span className="mi-hint">{t(sessionStatusLabel(s.status))}</span>
                 </button>
               ))
             )}
@@ -948,7 +948,7 @@ export function Composer({
               }}
             >
               {/* r02 A2：chip 只显当前档文字（无查询 API，记本会话上次选择，缺省 Medium） */}
-              <span>{effort ? EFFORT_LABEL[effort] : 'Medium'}</span>
+              <span>{effortLabel(effort, t)}</span>
             </button>
           )}
           {ctxInfo ? (

@@ -9,7 +9,7 @@ import { Icon, Switch } from '../ui'
 
 /**
  * Routine 编辑模态（T019 · 对齐原型 editOpen 段，704px）：
- * 名称 → 指令大输入框（框内嵌模型条与工作区条，同 Composer 语言）→ 触发器 chips（daily/weekly/interval，
+ * 名称 → 指令大输入框（框内嵌模型条与工作区条，同 Composer 语言）→ 触发器 chips（daily/weekly/interval/cron，
  * 可加可删，「添加触发器」走 data-pop-trigger 统一弹层机制）→ 三 tab（连接器 / 行为 / 通知）→ 取消 / 保存。
  * 连接器 tab 常驻权限警示条（定时运行不逐条询问权限）。
  */
@@ -174,6 +174,7 @@ export function RoutineEditModal({
                   <option value="daily">{t('每天')}</option>
                   <option value="weekly">{t('每周')}</option>
                   <option value="interval">{t('每隔')}</option>
+                  <option value="cron">{t('cron')}</option>
                 </select>
                 {tr.kind === 'weekly' ? (
                   <select
@@ -201,6 +202,16 @@ export function RoutineEditModal({
                     />
                     <span className="re-unit">{t('分钟')}</span>
                   </>
+                ) : tr.kind === 'cron' ? (
+                  <input
+                    className="input re-cron"
+                    type="text"
+                    spellCheck={false}
+                    value={tr.expr ?? '0 9 * * *'}
+                    aria-label={t('cron 表达式')}
+                    placeholder="0 9 * * *"
+                    onChange={(e) => patchTrigger(i, { expr: e.target.value })}
+                  />
                 ) : (
                   <input
                     className="input re-time"
@@ -235,7 +246,7 @@ export function RoutineEditModal({
               </button>
               {addPop.open ? (
                 <div className="popover re-add-pop" data-pop="routine-trigger" role="menu">
-                  {(['daily', 'weekly', 'interval'] as const).map((k) => (
+                  {(['daily', 'weekly', 'interval', 'cron'] as const).map((k) => (
                     <button
                       key={k}
                       type="button"
@@ -251,6 +262,7 @@ export function RoutineEditModal({
                 </div>
               ) : null}
             </div>
+            <div className="re-hint">{t('错过的触发会在下次打开应用时补跑一次')}</div>
           </div>
 
           {/* 三 tab */}

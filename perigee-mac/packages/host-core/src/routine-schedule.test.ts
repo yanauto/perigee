@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  computeCatchUpAt,
   computeNextRunAt,
   nextDailyAt,
   nextIntervalAt,
+  nextTriggerAt,
   nextWeeklyAt
 } from './routine-schedule.js'
 
@@ -102,5 +104,51 @@ describe('computeNextRunAt · 多触发器', () => {
   it('空 / 非法 → undefined', () => {
     expect(computeNextRunAt([], Date.now())).toBeUndefined()
     expect(computeNextRunAt([{ kind: 'daily' }], Date.now())).toBeUndefined()
+  })
+
+  it('cron 每天 09:00', () => {
+    const from = new Date(2026, 7, 13, 8, 0, 0, 0).getTime()
+    expect(nextTriggerAt({ kind: 'cron', expr: '0 9 * * *' }, from)).toBe(
+      new Date(2026, 7, 13, 9, 0, 0, 0).getTime()
+    )
+  })
+})
+
+describe('computeCatchUpAt', () => {
+  it('没有 lastFire → 不补跑', () => {
+    const now = new Date(2026, 7, 13, 10, 0, 0, 0).getTime()
+    expect(computeCatchUpAt([{ kind: 'daily', time: '09:00' }], now, null)).toBeNull()
+    expect(computeCatchUpAt([{ kind: 'daily', time: '09:00' }], now, undefined)).toBeNull()
+  })
+
+  it('daily：上次开火之后、现在之前的最早点', () => {
+    const last = new Date(2026, 7, 12, 10, 0, 0, 0).getTime()
+    const now = new Date(2026, 7, 13, 10, 0, 0, 0).getTime()
+    expect(computeCatchUpAt([{ kind: 'daily', time: '09:00' }], now, last)).toBe(
+      new Date(2026, 7, 13, 9, 0, 0, 0).getTime()
+    )
+  })
+
+  it('尚未到点 → 不补跑', () => {
+    const last = new Date(2026, 7, 13, 8, 0, 0, 0).getTime()
+    const now = new Date(2026, 7, 13, 8, 30, 0, 0).getTime()
+    expect(computeCatchUpAt([{ kind: 'daily', time: '09:00' }], now, last)).toBeNull()
+  })
+
+  it('interval：错过多个周期只返回最早一档', () => {
+    const last = 1_000_000
+    const period = 60_000
+    const now = last + period * 3 + 5_000
+    expect(computeCatchUpAt([{ kind: 'interval', everyMinutes: 1 }], now, last)).toBe(
+      last + period
+    )
+  })
+
+  it('cron：错过今天 09:00', () => {
+    const last = new Date(2026, 7, 12, 10, 0, 0, 0).getTime()
+    const now = new Date(2026, 7, 13, 10, 0, 0, 0).getTime()
+    expect(computeCatchUpAt([{ kind: 'cron', expr: '0 9 * * *' }], now, last)).toBe(
+      new Date(2026, 7, 13, 9, 0, 0, 0).getTime()
+    )
   })
 })

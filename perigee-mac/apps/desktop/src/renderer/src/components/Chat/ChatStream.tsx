@@ -66,7 +66,13 @@ function estimateItemSize(item: ViewItem, openTracks: ReadonlySet<string>): numb
 
 /** 中栏对话流（T015 三形态）：工作轨道（干活）/ 主干（说话）/ 产物条（轮次落点）。
  *  虚拟滚动 + 钉底（T001 红线内核逐字保留）；A/D 键盘审批（输入框聚焦时除外）。 */
-export function ChatStream({ wb }: { wb: Workbench }): JSX.Element {
+export function ChatStream({
+  wb,
+  onGoHome
+}: {
+  wb: Workbench
+  onGoHome: () => void
+}): JSX.Element {
   const { blocks, busy, activeSessionId, currentWorkspace } = wb
   const t = useT()
   const sessionId = activeSessionId ?? ''
@@ -158,6 +164,25 @@ export function ChatStream({ wb }: { wb: Workbench }): JSX.Element {
     return out
   }, [blocks, busy, wb.diffs])
 
+  /* 正在跑的工具轨自动展开；结束后不强制收起（保留用户点过的折叠） */
+  useEffect(() => {
+    const liveKeys = items
+      .filter((it): it is Extract<ViewItem, { type: 'track' }> => it.type === 'track' && it.live)
+      .map((it) => it.key)
+    if (liveKeys.length === 0) return
+    setOpenTracks((prev) => {
+      let changed = false
+      const next = new Set(prev)
+      for (const k of liveKeys) {
+        if (!next.has(k)) {
+          next.add(k)
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [items])
+
   // 切会话 → 重新钉底
   useEffect(() => {
     pinnedRef.current = true
@@ -248,8 +273,8 @@ export function ChatStream({ wb }: { wb: Workbench }): JSX.Element {
   if (!activeSessionId && !wb.pendingSend) {
     return (
       <div className="chat-scroll">
-        <EmptyState icon="spark" title={t('开始一个会话')} sub={t('按 ⌘N 快速新建会话')}>
-          <Button variant="primary" icon="plus" onClick={() => void wb.newSession()}>
+        <EmptyState icon="spark" title={t('开始一个会话')} sub={t('⌘N 回首页，输入并发送才会建会话')}>
+          <Button variant="primary" icon="plus" onClick={onGoHome}>
             {t('新建会话')}
           </Button>
         </EmptyState>

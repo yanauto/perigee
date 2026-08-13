@@ -57,9 +57,12 @@ export function Message({ block, onOpenPath }: Props) {
   }
 
   if (block.kind === 'assistant') {
+    const display = block.text.startsWith('本地回声 · 未连接 Grok。')
+      ? localizeUiText(block.text, lang)
+      : block.text
     return (
       <AssistantBody
-        text={block.text}
+        text={display}
         streaming={!!block.streaming}
         onMdClick={onMdClick}
         copyLabel={copyLabel}

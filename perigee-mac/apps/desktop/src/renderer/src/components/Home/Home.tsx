@@ -7,13 +7,14 @@ import type { Workbench } from '../../state/useWorkbench'
 import { usePopover } from '../../lib/popovers'
 import { useShowUsageCard } from '../../lib/ui-prefs'
 import { useT } from '../../i18n'
-import { Icon, IconButton } from '../ui'
+import { Icon, IconButton, Button } from '../ui'
 import { UsageDashboard } from './UsageDashboard'
 import { PermChip } from '../Composer/PermChip'
 import { PlusMenu } from '../Composer/PlusMenu'
 import { EffortPopover, type EffortLevel } from '../Composer/EffortPopover'
 import { canSubmit, composerAction } from '../../state/composer-actions'
 import { capabilityOf, fetchCommandCapabilities } from '../../state/features'
+import { engineEchoing } from '../../lib/engine-health'
 import {
   ATTACH_MAX,
   classifyAttachPath,
@@ -22,11 +23,11 @@ import {
   type AttachmentRef
 } from '../../lib/attachments'
 
-/** effort 档位 → chip 文字（与 Composer 一致） */
-const EFFORT_LABEL: Record<EffortLevel, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High'
+/** effort 档位 → 中文源串（过 t()） */
+function effortLabel(level: EffortLevel | null, t: (s: string) => string): string {
+  if (level === 'low') return t('低')
+  if (level === 'high') return t('高')
+  return t('中')
 }
 
 /** 权限四态（与 Composer 一致：AppSettings.permissionPolicy） */
@@ -211,7 +212,7 @@ export function Home({
     const mediaPaths = mediaPathsFromAttachments(attachments)
     const merged = mergeAttachmentsIntoDraft(text, attachments)
     // 纯媒体附件时草稿可空，占位文案与 Composer 一致
-    const displayText = merged || text || (mediaPaths.length ? '请查看附件' : '')
+    const displayText = merged || text || (mediaPaths.length ? t('请查看附件') : '')
     if (!displayText && mediaPaths.length === 0) return
 
     /* ① 立刻切页：草稿清空 + 乐观态上屏（这一步是同步的，不 await 任何东西） */
@@ -247,10 +248,12 @@ export function Home({
           // slash 命令选中即执行（T005 路由），不作为提示词发送
           try {
             const res = await window.perigee.session.command(rec.id, text.slice(1))
-            if (res.status === 'error') wb.setError(`命令执行失败：${res.detail}`)
-            else if (res.status === 'unsupported') wb.setError(`命令暂不支持：${res.detail}`)
+            if (res.status === 'error') wb.setError(`${t('命令执行失败')}：${res.detail}`)
+            else if (res.status === 'unsupported') wb.setError(`${t('命令暂不支持')}：${res.detail}`)
           } catch (err) {
-            wb.setError(`命令执行失败：${err instanceof Error ? err.message : String(err)}`)
+            wb.setError(
+              `${t('命令执行失败')}：${err instanceof Error ? err.message : String(err)}`
+            )
           }
           wb.clearPendingSend() // slash 不会有用户消息回显，这里显式收尾
         } else {
@@ -292,6 +295,8 @@ export function Home({
   }
 
   const policy = wb.settings?.permissionPolicy ?? 'ask'
+  const echoing = engineEchoing(wb.appInfo)
+  const needsSetup = !hasWorkspace || echoing
 
   return (
     <div className="home">
@@ -301,8 +306,38 @@ export function Home({
           <span>{t(greetingKey())}</span>
         </h1>
 
-        {/* T017：设置 → 通用「主页显示用量卡」可关（关掉后只剩问候语与输入框） */}
-        {showUsage ? <UsageDashboard enabled={features.stats} /> : null}
+        {!wb.appInfo ? null : needsSetup ? (
+          <div className="home-setup">
+            <div className={`home-setup-row${hasWorkspace ? ' is-done' : ''}`}>
+              <span className="home-setup-mark">
+                {hasWorkspace ? <Icon name="check" size={12} /> : '1'}
+              </span>
+              <span className="home-setup-label">
+                {hasWorkspace ? t('工作区已打开') : t('打开一个工作区')}
+              </span>
+              {!hasWorkspace ? (
+                <Button variant="ghost" onClick={() => void wb.openFolder()}>
+                  {t('打开文件夹…')}
+                </Button>
+              ) : null}
+            </div>
+            <div className={`home-setup-row${!echoing ? ' is-done' : ''}`}>
+              <span className="home-setup-mark">
+                {!echoing ? <Icon name="check" size={12} /> : '2'}
+              </span>
+              <span className="home-setup-label">
+                {echoing ? t('安装并登录 Grok CLI') : t('Grok CLI 已就绪')}
+              </span>
+              {echoing ? (
+                <Button variant="ghost" onClick={() => wb.openSettingsAt('engine')}>
+                  {t('打开引擎设置')}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        ) : showUsage ? (
+          <UsageDashboard enabled={features.stats} />
+        ) : null}
 
         {/* 输入框沉底：chips 在框上，控制条在框内下沿 */}
         <div className="home-composer">
@@ -340,7 +375,7 @@ export function Home({
                     <span className={`hc-box${wb.settings?.useWorktree ? ' is-on' : ''}`}>
                       {wb.settings?.useWorktree ? <Icon name="check" size={9} /> : null}
                     </span>
-                    <span className="hc-label">worktree</span>
+                    <span className="hc-label">{t('隔离工作区')}</span>
                   </button>
                 ) : null}
               </>
@@ -373,7 +408,7 @@ export function Home({
           {attachMenuOpen && hasWorkspace ? (
             <div className="popover slash-menu home-attach-menu" role="listbox">
               {attachChoices.length === 0 ? (
-                <div className="menu-label">未索引到工作区文件</div>
+                <div className="menu-label">{t('未索引到工作区文件')}</div>
               ) : (
                 attachChoices.map((p) => (
                   <button
@@ -464,7 +499,7 @@ export function Home({
                   data-tip={t('推理强度（新会话生效）')}
                   onClick={effortPop.toggle}
                 >
-                  <span>{effort ? EFFORT_LABEL[effort] : 'Medium'}</span>
+                  <span>{effortLabel(effort, t)}</span>
                 </button>
               ) : null}
               <div className="hb-right">

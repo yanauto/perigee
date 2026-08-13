@@ -30,11 +30,12 @@ function normalizeTriggers(raw: unknown): RoutineTrigger[] {
     if (!t || typeof t !== 'object') continue
     const o = t as Record<string, unknown>
     const kind = o.kind
-    if (kind !== 'daily' && kind !== 'weekly' && kind !== 'interval') continue
+    if (kind !== 'daily' && kind !== 'weekly' && kind !== 'interval' && kind !== 'cron') continue
     const tr: RoutineTrigger = { kind }
     if (typeof o.time === 'string') tr.time = o.time
     if (typeof o.weekday === 'number') tr.weekday = o.weekday
     if (typeof o.everyMinutes === 'number') tr.everyMinutes = o.everyMinutes
+    if (typeof o.expr === 'string') tr.expr = o.expr
     out.push(tr)
   }
   return out

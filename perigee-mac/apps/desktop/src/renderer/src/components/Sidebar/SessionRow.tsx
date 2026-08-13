@@ -8,7 +8,8 @@ import {
   resolveSessionDeleteClick,
   SESSION_DELETE_CONFIRM_MS
 } from './session-delete-confirm'
-import { useT } from '../../i18n'
+import { useI18n, useT } from '../../i18n'
+import { localizeUiText } from '../../lib/localize-ui-text'
 import { Icon } from '../ui'
 
 /** 四态状态点（T008 attention；视觉对齐原型 DOT 表，CSS 见 global.css §5） */
@@ -80,6 +81,7 @@ export function SessionRow({
   onCancel?: () => void
 }) {
   const t = useT()
+  const { lang } = useI18n()
   const [editing, setEditing] = useState(false)
   const [confirmDel, setConfirmDel] = useState(false)
   const [movePage, setMovePage] = useState(false)
@@ -252,7 +254,7 @@ export function SessionRow({
 
   return (
     <div
-      className={`sb-item${active ? ' is-active' : ''}${dragging ? ' is-dragging' : ''}${menuOpen ? ' is-menu-open' : ''}`}
+      className={`sb-item${active ? ' is-active' : ''}${dragging ? ' is-dragging' : ''}${menuOpen ? ' is-menu-open' : ''}${attention === 'needs_input' || attention === 'working' ? ' is-strong' : ''}`}
       role="button"
       tabIndex={0}
       onClick={() => onSelect(session.id)}
@@ -301,7 +303,7 @@ export function SessionRow({
           >
             {session.title || t('未命名会话')}
           </span>
-          {preview ? <span className="si-preview">{preview}</span> : null}
+          {preview ? <span className="si-preview">{localizeUiText(preview, lang)}</span> : null}
         </span>
       )}
 

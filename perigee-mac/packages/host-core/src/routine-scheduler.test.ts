@@ -191,4 +191,97 @@ describe('RoutineScheduler', () => {
     expect(run.summary).toMatch(/engine down/)
     rmSync(path, { force: true })
   })
+
+  it('启动时错过触发补跑一次，不连环', async () => {
+    const path = tmpPath()
+    const store = new RoutineStore(path)
+    let now = 1_000_000
+    const timers: Array<{ fn: () => void; ms: number; id: number }> = []
+    let tid = 1
+    let fireCount = 0
+
+    const sched = new RoutineScheduler({
+      store,
+      now: () => now,
+      setTimeout: (fn, ms) => {
+        const id = tid++
+        timers.push({ fn, ms, id })
+        return id as unknown as ReturnType<typeof setTimeout>
+      },
+      clearTimeout: (id) => {
+        const i = timers.findIndex((t) => t.id === (id as unknown as number))
+        if (i >= 0) timers.splice(i, 1)
+      },
+      onFire: async () => {
+        fireCount++
+        return { sessionId: `ses_${fireCount}`, status: 'ok', durationMs: 10, summary: 'ok' }
+      }
+    })
+
+    const r = sched.create({
+      name: 'catch-up',
+      instruction: 'x',
+      enabled: true,
+      workspace: '/tmp',
+      model: '',
+      triggers: [{ kind: 'interval', everyMinutes: 1 }],
+      mcpServers: [],
+      notify: false
+    })
+    store.prependRun(r.id, {
+      id: 'run_old',
+      sessionId: 'ses_old',
+      startedAt: now - 3 * 60_000,
+      durationMs: 10,
+      status: 'ok'
+    })
+    sched.start()
+    expect(timers).toHaveLength(1)
+    expect(timers[0]!.ms).toBe(0)
+
+    const t0 = timers[0]!
+    timers.splice(0, 1)
+    await t0.fn()
+    await vi.waitFor(() => expect(fireCount).toBe(1))
+
+    const after = store.get(r.id)!
+    expect(after.runs[0]!.sessionId).toBe('ses_1')
+    expect(fireCount).toBe(1)
+    expect(sched.peekNextFireAt(r.id)).toBe(after.runs[0]!.startedAt + 60_000)
+
+    sched.stop()
+    rmSync(path, { force: true })
+  })
+
+  it('从未跑过不补跑', () => {
+    const path = tmpPath()
+    const store = new RoutineStore(path)
+    const now = 2_000_000
+    const timers: Array<{ ms: number }> = []
+    const sched = new RoutineScheduler({
+      store,
+      now: () => now,
+      setTimeout: (fn, ms) => {
+        timers.push({ ms })
+        return 1 as unknown as ReturnType<typeof setTimeout>
+      },
+      clearTimeout: () => {},
+      onFire: async () => ({ sessionId: 's', status: 'ok', durationMs: 1 })
+    })
+    sched.create({
+      name: 'fresh',
+      instruction: 'x',
+      enabled: true,
+      workspace: '/tmp',
+      model: '',
+      triggers: [{ kind: 'interval', everyMinutes: 1 }],
+      mcpServers: [],
+      notify: false
+    })
+    sched.start()
+    expect(timers).toHaveLength(1)
+    expect(timers[0]!.ms).toBe(60_000)
+    sched.stop()
+    rmSync(path, { force: true })
+  })
 })

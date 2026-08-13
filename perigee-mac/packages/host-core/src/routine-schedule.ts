@@ -1,8 +1,9 @@
 /**
  * Routines 下次运行时间计算（纯函数，T018）
- * 本地时区；不补跑错过的触发点；cron 本轮不做。
+ * 本地时区；错过的点启动时最多补跑一次；支持 5 字段 cron。
  */
 import type { RoutineTrigger } from './routine-types.js'
+import { nextCronAt } from './cron-next.js'
 
 function parseHHmm(time: string | undefined): { h: number; m: number } | null {
   if (time == null || typeof time !== 'string') return null
@@ -86,6 +87,8 @@ export function nextTriggerAt(
       return nextWeeklyAt(trigger.weekday, trigger.time, fromMs)
     case 'interval':
       return nextIntervalAt(trigger.everyMinutes, fromMs, lastFireMs)
+    case 'cron':
+      return nextCronAt(trigger.expr, fromMs)
     default:
       return null
   }
@@ -106,6 +109,25 @@ export function computeNextRunAt(
     const n = nextTriggerAt(t, fromMs, lastFireMs)
     if (n == null) continue
     if (best == null || n < best) best = n
+  }
+  return best
+}
+
+/**
+ * 上次开火之后、现在之前的最早到期点（含等于 now）。
+ * 没有 lastFire 不补跑（避免新建/首次启用立刻开火）。
+ */
+export function computeCatchUpAt(
+  triggers: RoutineTrigger[] | undefined,
+  now: number,
+  lastFireMs?: number | null
+): number | null {
+  if (lastFireMs == null || !Array.isArray(triggers) || triggers.length === 0) return null
+  let best: number | null = null
+  for (const t of triggers) {
+    const due = nextTriggerAt(t, lastFireMs, lastFireMs)
+    if (due == null || due > now) continue
+    if (best == null || due < best) best = due
   }
   return best
 }

@@ -105,8 +105,11 @@ export function useWorkbench() {
     return withOptimistic(real, pendingSend)
   }, [blocksMap, activeSessionId, pendingSend])
 
-  /** 每会话「最后动态」摘要：供侧栏队列显示 */
-  const lastActivity = useMemo(() => lastActivityBySession(blocksMap), [blocksMap])
+  /** 每会话「最后动态」摘要：供侧栏队列显示（含待审批） */
+  const lastActivity = useMemo(() => {
+    const statusById = new Map(sessions.map((s) => [s.id, s.status]))
+    return lastActivityBySession(blocksMap, statusById)
+  }, [blocksMap, sessions])
 
   const applyEvent = useCallback((ev: SessionEvent) => {
     setBlocksMap((prev) => {

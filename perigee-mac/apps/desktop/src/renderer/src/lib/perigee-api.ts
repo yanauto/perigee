@@ -156,13 +156,15 @@ export type FileDiff = {
 /* ---------- routines（T018 契约镜像；字段以 docs/API-preload.md 为准，前端不自造） ---------- */
 
 export type RoutineTrigger = {
-  kind: 'daily' | 'weekly' | 'interval'
+  kind: 'daily' | 'weekly' | 'interval' | 'cron'
   /** 'HH:mm'，daily / weekly */
   time?: string
   /** 0–6，weekly */
   weekday?: number
   /** interval */
   everyMinutes?: number
+  /** cron：5 字段（分 时 日 月 周） */
+  expr?: string
 }
 
 export type RoutineRun = {

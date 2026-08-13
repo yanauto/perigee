@@ -5,7 +5,8 @@ import {
   displayModel,
   formatTokens,
   homeTilde,
-  resolveModelLabel
+  resolveModelLabel,
+  sessionStatusLabel
 } from './format'
 
 describe('displayModel（T026 模型名去后缀，只动显示层）', () => {
@@ -77,5 +78,18 @@ describe('format 既有行为', () => {
     expect(dirName('/a/b/c.ts')).toBe('a/b')
     expect(homeTilde('~/workspace/x')).toBe('~/workspace/x')
     expect(homeTilde('/opt/x')).toBe('/opt/x')
+  })
+})
+
+describe('sessionStatusLabel', () => {
+  it('已知状态换成中文源串', () => {
+    expect(sessionStatusLabel('streaming')).toBe('生成中')
+    expect(sessionStatusLabel('tool_running')).toBe('工具运行中')
+    expect(sessionStatusLabel('waiting_approval')).toBe('待审批')
+    expect(sessionStatusLabel('idle')).toBe('空闲')
+    expect(sessionStatusLabel('error')).toBe('出错')
+  })
+  it('未知值原样返回', () => {
+    expect(sessionStatusLabel('weird')).toBe('weird')
   })
 })

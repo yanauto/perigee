@@ -30,6 +30,7 @@ describe('session-reducer', () => {
     blocks = reduceEvent(blocks, ev({ type: 'tool.result', callId: 'c1', ok: true, result: 'a.txt' }))
     expect(blocks).toHaveLength(1)
     expect(blocks[0]).toMatchObject({ kind: 'tool', callId: 'c1', status: 'done', result: 'a.txt' })
+    expect((blocks[0] as { durationMs?: number }).durationMs).toBe(1000)
   })
 
   it('tool.call 缺 callId 时回退事件 id 配对', () => {

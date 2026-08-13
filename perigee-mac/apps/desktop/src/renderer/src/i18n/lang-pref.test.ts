@@ -20,11 +20,11 @@ describe('resolveLangPref', () => {
     })
   })
 
-  it('都空 → 默认中文', () => {
-    expect(resolveLangPref(null, undefined)).toEqual({ lang: 'zh' })
+  it('都空 → 默认英文', () => {
+    expect(resolveLangPref(null, undefined)).toEqual({ lang: 'en' })
   })
 
   it('非法值忽略', () => {
-    expect(resolveLangPref('de', 'jp')).toEqual({ lang: 'zh' })
+    expect(resolveLangPref('de', 'jp')).toEqual({ lang: 'en' })
   })
 })

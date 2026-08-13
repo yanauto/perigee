@@ -14,7 +14,7 @@ const pad2 = (n: number): string => String(n).padStart(2, '0')
 
 const hhmm = (d: Date): string => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 
-/** 单个触发器的人话描述：daily「每天 08:00」weekly「每周一 09:00」interval「每 30 分钟」 */
+/** 单个触发器的人话描述：daily「每天 08:00」weekly「每周一 09:00」interval「每 30 分钟」cron「cron 0 9 * * *」 */
 export function describeTrigger(tr: RoutineTrigger, lang: Lang = 'zh'): string {
   if (tr.kind === 'interval') {
     const m = tr.everyMinutes ?? 0
@@ -23,6 +23,10 @@ export function describeTrigger(tr: RoutineTrigger, lang: Lang = 'zh'): string {
       return lang === 'en' ? `Every ${h}h` : `每 ${h} 小时`
     }
     return lang === 'en' ? `Every ${m}min` : `每 ${m} 分钟`
+  }
+  if (tr.kind === 'cron') {
+    const expr = tr.expr?.trim() || '* * * * *'
+    return lang === 'en' ? `cron ${expr}` : `cron ${expr}`
   }
   const time = tr.time ?? '00:00'
   if (tr.kind === 'weekly') {
@@ -107,5 +111,6 @@ export function routineDotState(
 export function emptyTrigger(kind: RoutineTrigger['kind']): RoutineTrigger {
   if (kind === 'interval') return { kind, everyMinutes: 60 }
   if (kind === 'weekly') return { kind, time: '09:00', weekday: 1 }
+  if (kind === 'cron') return { kind, expr: '0 9 * * *' }
   return { kind, time: '09:00' }
 }

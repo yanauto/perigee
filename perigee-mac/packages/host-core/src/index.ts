@@ -157,11 +157,13 @@ export {
 } from './routine-types.js'
 export {
   computeNextRunAt,
+  computeCatchUpAt,
   nextDailyAt,
   nextWeeklyAt,
   nextIntervalAt,
   nextTriggerAt
 } from './routine-schedule.js'
+export { nextCronAt, parseCron } from './cron-next.js'
 export { RoutineStore, type RoutineStoreData } from './routine-store.js'
 export {
   RoutineScheduler,

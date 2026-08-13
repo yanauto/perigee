@@ -285,7 +285,7 @@ function appendTerm(sessionId: string, chunk: string): void {
 
 /**
  * T018：Routine 到点/立即执行 —— 新开会话、发 instruction、等轮次结束。
- * 权限强制 yolo（会话 meta + routineSessionIds 兜底）；不补跑错过点。
+ * 权限强制 yolo（会话 meta + routineSessionIds 兜底）；错过的点启动时补跑一次。
  */
 async function fireRoutineSession(routine: Routine): Promise<RoutineFireResult> {
   const startedAt = Date.now()

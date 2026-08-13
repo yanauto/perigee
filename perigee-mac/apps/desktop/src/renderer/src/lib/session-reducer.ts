@@ -1,5 +1,6 @@
 import type { SessionEvent } from './perigee-api'
 import type { ChatBlock, PlanEntry } from './types'
+import { toolDurationMs } from './tool-meter'
 
 /**
  * SessionEvent → ChatBlock[] 归约器（纯函数）。
@@ -103,7 +104,12 @@ export function reduceEvent(blocks: ChatBlock[], ev: SessionEvent): ChatBlock[] 
       const next = blocks.map((b) => {
         if (b.kind === 'tool' && b.callId === callId) {
           matched = true
-          return { ...b, status: ev.ok ? ('done' as const) : ('error' as const), result }
+          return {
+            ...b,
+            status: ev.ok ? ('done' as const) : ('error' as const),
+            result,
+            durationMs: toolDurationMs(b.ts, ev.ts)
+          }
         }
         return b
       })

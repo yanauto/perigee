@@ -308,7 +308,7 @@ type SessionCommandResult = {
 | `assistant.message` | 完整助手消息 `{ text }` |
 | `thought.delta` / `thought.message` | 思考流（可折叠展示） |
 | `tool.call` | `{ id, name, args, kind?, callId? }` |
-| `tool.result` | `{ callId, ok, result, name? }` |
+| `tool.result` | `{ callId, ok, result, name? }`。UI 工具行 +/- 与耗时由 renderer 从 result 文本与 call/result 时间戳派生，不升 schema |
 | `plan` | `{ entries }` |
 | `usage` | `{ inputTokens?, outputTokens?, raw? }` |
 | `turn.end` | `{ stopReason, engineSessionId? }` |
@@ -423,10 +423,11 @@ routines: {
 }
 
 type RoutineTrigger = {
-  kind: 'daily' | 'weekly' | 'interval'
+  kind: 'daily' | 'weekly' | 'interval' | 'cron'
   time?: string            // 'HH:mm'，daily/weekly
   weekday?: number         // 0–6，weekly
   everyMinutes?: number    // interval
+  expr?: string            // cron：5 字段（分 时 日 月 周）；周 0 与 7 均为周日
 }
 
 type RoutineRun = {
@@ -463,8 +464,8 @@ type RoutinePatch = Partial<Omit<Routine, 'id' | 'createdAt' | 'runs'>>
 | 到点触发 | 应用运行中调度；创建新会话 `Routine · <name>`，发 `instruction`，跑到轮次结束 |
 | 权限 | **强制 yolo**（会话级 meta + Host 兜底）；定时无人在场，不弹审批卡 |
 | 未读 | 新会话 `lastReadAt=null`；跑完后侧栏 attention=`unread` |
-| 错过 | 应用未开时**不补跑**，只重算 `nextRunAt` |
-| 触发器 | `daily` / `weekly` / `interval`；**无 cron**（TECH-DEBT） |
+| 错过 | 应用未开时，启动最多**补跑一次**（取上次开火之后、现在之前的最早到期点）；从未跑过（无 `lastFire`）不补跑 |
+| 触发器 | `daily` / `weekly` / `interval` / `cron`（5 字段） |
 | `runNow` | 立即执行（不要求 enabled） |
 | `toggle(false)` | 清 timer，不再触发 |
 

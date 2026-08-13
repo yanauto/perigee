@@ -32,6 +32,8 @@ export type ChatBlock =
       status: ToolStatus
       result?: string
       ts: string
+      /** call→result 墙钟差；前端派生，不升 schema */
+      durationMs?: number
     }
   | { kind: 'plan'; id: string; entries: PlanEntry[]; ts: string }
   | {

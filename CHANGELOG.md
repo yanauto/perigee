@@ -3,6 +3,41 @@
 All notable changes to Perigee are documented here.  
 产品对外更新记在本文件；UI 工单细账仍见 `perigee-mac/docs/design/CHANGELOG-ui.md`。
 
+## [Unreleased]
+
+English is now the default UI language. First-run is honest when Grok CLI is missing, daily session chrome is a bit clearer, and three registered tech-debt items are closed (tool-row meters, cron routines, one missed-run on startup).
+
+No new installer yet — still [v0.3.0](https://github.com/yanauto/perigee/releases/tag/v0.3.0). Existing Chinese language preference is unchanged.
+
+### Interface language
+
+- New installs default to **English** (`lang.pref`); a saved `zh` preference still wins
+- Stub echo, sidebar previews, slash hints, and cross-session errors localize instead of leaking Chinese source strings
+
+### First run / Stub
+
+- Persistent banner when the engine is local echo (Grok CLI not connected)
+- Home shows a two-step setup (workspace, then CLI) instead of an empty usage card
+- Stub copy states that messages are echoed and will not reach Grok
+
+### Daily use
+
+- Sidebar preview: `Waiting for approval · …` / `You: …`; overflow menu stays visible on busy/needs-input rows
+- ⌘N goes home; a session is created only when you type and send
+- Live tool tracks expand as they run; tool rows show diff `+/-` or line count, plus duration (derived in the UI, no schema bump)
+
+### Routines
+
+- Cron triggers (5-field, Sunday = 0 or 7) in the editor
+- If the app was closed through a due time, startup fires **at most one** catch-up; a routine that has never run does not fire on first enable
+
+### Docs
+
+- `TECH-DEBT.md` open list is empty (T015-meter, T018-cron, T018-missed)
+- `docs/API-preload.md` matches cron + catch-up behavior
+
+---
+
 ## [0.3.0] — 2026-08-13
 
 Grok 1.0.3 ACP handshake (`initialize` → `authenticate` → `session/new`), live multi-session sidebar (unread, preview, drafts, background stop), and the first public macOS installer.

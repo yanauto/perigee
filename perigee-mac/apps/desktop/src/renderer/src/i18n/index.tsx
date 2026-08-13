@@ -5,7 +5,7 @@ import { isLang, resolveLangPref, type Lang } from './lang-pref'
 
 /**
  * i18n 基建（T013）：轻量方案 = Context + 文案表（不引重型库）。
- * - 默认中文；t(中文源串) 英文档查 EN 表，缺串回退中文。
+ * - 默认英文（多数用户）；t(中文源串) 英文档查 EN 表，缺串回退中文源串。
  * - 持久化走 uiState('lang.pref')；localStorage 仅作首屏镜像。切换即时生效：纯 state，
  *   不刷新、不丢会话状态。各页面文案随 T014–T016 接入，T017 扫尾。
  * - HMR / 重挂：本 renderer 的 localStorage 压过陈旧 uiState，避免界面被打回中文。
@@ -23,7 +23,7 @@ interface I18nValue {
 }
 
 const I18nContext = createContext<I18nValue>({
-  lang: 'zh',
+  lang: 'en',
   setLang: () => {},
   t: (s) => s
 })
@@ -32,9 +32,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     try {
       const v = localStorage.getItem(LANG_LS_KEY)
-      return isLang(v) ? v : 'zh'
+      return isLang(v) ? v : 'en'
     } catch {
-      return 'zh'
+      return 'en'
     }
   })
 
