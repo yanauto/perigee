@@ -2,7 +2,7 @@
 
 > 2026-08-13：正式包 **0.3.0** 已上 [GitHub Releases](https://github.com/yanauto/perigee/releases/tag/v0.3.0)。  
 > 平台：Apple Silicon；未签名（`identity: null`）。  
-> 本版做了什么见仓库根目录 [CHANGELOG.md](../../../CHANGELOG.md)。
+> 本版做了什么见仓库根目录 [CHANGELOG.md](../../../CHANGELOG.md) / [更新日志](../../../CHANGELOG.zh-CN.md)。
 
 ## 用户：从 Release 安装
 

@@ -64,7 +64,7 @@ pnpm dev
 
 **Requirements**: Node ≥ 20 · pnpm · the official Grok Build CLI installed locally (Stub mode lets you try the UI without it).
 
-What landed in 0.3.0 (handshake, multi-session sync, packaging) is in the **[Changelog](CHANGELOG.md)**.
+What landed in 0.3.0 (handshake, multi-session sync, packaging) is in the **[Changelog](CHANGELOG.md)** ([中文](CHANGELOG.zh-CN.md)).
 
 ### Project layout
 

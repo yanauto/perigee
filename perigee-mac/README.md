@@ -1,19 +1,21 @@
 # Perigee for macOS
 
-**Perigee — Grok Build CLI 的原生 macOS 编排台**(Electron)。多会话编排 · 内置浏览器控制(Flyby) · 实时 markdown 渲染。
+**Perigee — a native macOS console for Grok Build CLI** (Electron). Multiple sessions · built-in browser control (Flyby) · live markdown rendering.
 
-## 下载
+[English](#) · [简体中文](README.zh-CN.md)
 
-正式包 **0.3.0**（Apple Silicon，未签名）：[GitHub Releases · v0.3.0](https://github.com/yanauto/perigee/releases/tag/v0.3.0)
+## Download
 
-- `Perigee-0.3.0-arm64.dmg` — 拖到 Applications
-- `Perigee-0.3.0-arm64-mac.zip` — 解压即 `.app`
+Release **0.3.0** (Apple Silicon, unsigned): [GitHub Releases · v0.3.0](https://github.com/yanauto/perigee/releases/tag/v0.3.0)
 
-若 Gatekeeper 拦截：`xattr -cr /Applications/Perigee.app`。发消息需要本机已登录的 Grok CLI 1.0.3+。
+- `Perigee-0.3.0-arm64.dmg` — drag to Applications
+- `Perigee-0.3.0-arm64-mac.zip` — unzip to get the `.app`
 
-0.3.0 更新说明：[CHANGELOG.md](../CHANGELOG.md)（根目录）。
+If Gatekeeper blocks it: `xattr -cr /Applications/Perigee.app`. Sending messages needs a local signed-in Grok CLI 1.0.3+.
 
-## 快速启动
+What changed in 0.3.0: [Changelog](../CHANGELOG.md) (repo root). Chinese: [更新日志](../CHANGELOG.zh-CN.md).
+
+## Quick start
 
 ```bash
 cd perigee-mac
@@ -21,22 +23,22 @@ pnpm install
 pnpm dev
 ```
 
-前置:Node ≥20 · 本机已安装官方 Grok Build CLI(引擎可切 Stub 模式,无 CLI 也能起 UI)。
+Requires Node ≥ 20 and the official Grok Build CLI locally (the engine can run in Stub mode, so the UI still starts without CLI).
 
-自己打安装包：`docs/playbooks/install-macos.md`（`rebuild:native` → `pnpm --filter @perigee/app run dist`）。
+Build an installer yourself: `docs/playbooks/install-macos.md` (`rebuild:native` → `pnpm --filter @perigee/app run dist`).
 
-## 结构一览
+## Layout
 
-| 目录 | 内容 |
+| Path | What |
 |---|---|
-| `apps/desktop/` | Electron 应用(main / preload / renderer) |
-| `packages/` | 共享包:引擎协议、Grok 引擎适配、host-core、md-core、event-schema |
-| `docs/` | 技术文档(先读 `代码地图.md`,再看 `API-preload.md` = `window.perigee` 契约) |
-| `scripts/` | 构建与工具脚本 |
+| `apps/desktop/` | Electron app (main / preload / renderer) |
+| `packages/` | Shared packages: engine protocol, Grok adapters, host-core, md-core, event-schema |
+| `docs/` | Technical docs (start with `代码地图.md`, then `API-preload.md` = `window.perigee` contract) |
+| `scripts/` | Build and utility scripts |
 
-## 开发约定
+## Conventions
 
-- UI 主战场:`apps/desktop/src/renderer/`
-- 提交前必过:`pnpm typecheck && pnpm test`
-- 视觉方向:`docs/design/BRIEF.md`
-- 不改 `packages/engine-protocol` 的对外契约;跨包改动先开 Issue 对齐
+- UI lives in `apps/desktop/src/renderer/`
+- Before a PR: `pnpm typecheck && pnpm test`
+- Visual direction: `docs/design/BRIEF.md`
+- Do not change the public contract of `packages/engine-protocol`; cross-package changes need an Issue first
