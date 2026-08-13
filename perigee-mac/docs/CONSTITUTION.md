@@ -38,8 +38,8 @@
 | Flyby（仓 `grok-computer-use`） | 工具/MCP 接入，不吞并 |
 | Grok Build TUI | 引擎与无 GUI 环境；体验主路径归 Desktop |
 | **perigee 轻根** | `~/projects/perigee/`：跨平台共享区（第一版仅 README/指针，不放源码 monorepo） |
-| **perigee-mac** | 本仓路径（原 `grok-desktop` 目录迁入）；vitals id 仍为 `grok-desktop`；独立 git |
-| **perigee-win** | Windows 平台工区（`../perigee-win`，vitals id=`perigee-win`，独立 git）；共享能力以本仓为源；**禁止无 ADR 整仓分叉** |
+| **perigee-mac** | 本仓路径（原 `grok-desktop` 目录迁入）；独立 git |
+| **perigee-win** | Windows 平台工区（`../perigee-win`，独立 git）；共享能力以本仓为源；**禁止无 ADR 整仓分叉** |
 
 ## C6 · 阶段纪律
 

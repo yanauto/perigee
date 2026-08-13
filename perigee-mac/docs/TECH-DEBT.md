@@ -1,7 +1,7 @@
 # 技术债登记（唯一真相源）
 
 > 更新：2026-08-13 · **T015-meter / T018-cron / T018-missed 清偿后**  
-> 非债边界见 ADR 0012 · 进度 `vitals proj now grok-desktop`
+> 非债边界见 ADR 0012（本地）。进度不进 git。
 
 ## 开放项
 

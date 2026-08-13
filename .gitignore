@@ -10,7 +10,7 @@ coverage/
 .DS_Store
 .archive/
 
-# 记忆框架与史料不上云(2026-08-03 边界事故后加;全路径锚定)
+# Local agent notes, tickets, and diaries stay off the public repo (2026-08-03)
 **/.claude/
 **/.grok/
 **/.kimi-code/

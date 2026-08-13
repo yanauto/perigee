@@ -76,7 +76,7 @@ describe('format 既有行为', () => {
   it('baseName / dirName / homeTilde', () => {
     expect(baseName('/a/b/c.ts')).toBe('c.ts')
     expect(dirName('/a/b/c.ts')).toBe('a/b')
-    expect(homeTilde('~/workspace/x')).toBe('~/workspace/x')
+    expect(homeTilde('/Users/alex/workspace/x')).toBe('~/workspace/x')
     expect(homeTilde('/opt/x')).toBe('/opt/x')
   })
 })

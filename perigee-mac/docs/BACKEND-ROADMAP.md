@@ -62,7 +62,7 @@
 | 引擎 `grok agent stdio` ACP | 无 | **产品终态主路径** |
 | 权限 ACP 闭环 | 无（always-approve 权宜） | **必须上** |
 | 观测/诊断 | 弱 | 长期使用刚需 |
-| 记忆框架/文档 | 已装 | 继续用 proj + ADR 迭代 |
+| 工程文档 | 已装 | 继续用 ADR / 手册迭代 |
 
 **产品经理判断**：当前是 **MVP 原型**，距离「长期使用」差在 **进程模型、协议、可信写盘、恢复与可维护性**，不差在再堆几个 IPC。
 
@@ -363,9 +363,9 @@
 |------|------|
 | 本方案定稿 | 入仓 `docs/BACKEND-ROADMAP.md`（施工时从 plan 同步） |
 | 重大取舍 | `docs/decisions/` ADR |
-| 每波关账 | `vitals proj log` + `docs/sessions/日文件` |
+| 每波关账 | 测试 + playbook |
 | 操作 | `docs/工程手册.md` / `playbooks/` |
-| 实况 | `vitals proj now perigee` |
+| 实况 | 本地，不进 git |
 
 ---
 
