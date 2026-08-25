@@ -126,3 +126,4 @@ perigee-mac/docs/**
 !perigee-mac/docs/playbooks/sync-grok-cli.md
 !perigee-mac/docs/playbooks/v3-smoke.md
 !perigee-mac/docs/playbooks/worktree-promote.md
+docs-private/
