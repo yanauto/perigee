@@ -115,6 +115,8 @@ export interface GrokAcpEngineOptions {
   clientVersion?: string
   /** session/new 注入的 MCP 服务器（settings 启用的子集） */
   mcpServers?: DesktopMcpServer[]
+  /** 官方 GROK_SANDBOX / --sandbox；下一轮新开子进程生效 */
+  sandbox?: string
   onPermissionRequest?: (req: {
     id: string
     sessionId: string
@@ -188,6 +190,7 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
   private permissionPolicy: PermissionPolicy
   private clientVersion: string
   private mcpServers: DesktopMcpServer[]
+  private sandbox?: string
   private onPermissionRequest?: GrokAcpEngineOptions['onPermissionRequest']
   /** 最近一次 initialize 协商的 prompt 能力（全引擎共享，进程级） */
   private promptCapabilities: PromptCapabilities = { ...DEFAULT_PROMPT_CAPABILITIES }
@@ -204,6 +207,7 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
     this.permissionPolicy = normalizePermissionPolicy(opts.permissionPolicy ?? 'ask')
     this.clientVersion = opts.clientVersion ?? PERIGEE_ACP_CLIENT_ID
     this.mcpServers = opts.mcpServers ?? []
+    this.sandbox = opts.sandbox?.trim() || undefined
     this.onPermissionRequest = opts.onPermissionRequest
   }
 
@@ -862,7 +866,8 @@ export class GrokAcpEngine implements AgentEngine, AcpEngineCapabilities {
       env: {
         ...process.env,
         GROK_CLIENT_VERSION: this.clientVersion,
-        NO_COLOR: '1'
+        NO_COLOR: '1',
+        ...(this.sandbox && this.sandbox !== 'off' ? { GROK_SANDBOX: this.sandbox } : {})
       },
       stdio: ['pipe', 'pipe', 'pipe']
     }) as ChildProcessWithoutNullStreams

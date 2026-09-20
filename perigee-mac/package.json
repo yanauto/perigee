@@ -11,7 +11,9 @@
     "test": "pnpm -r run test",
     "doctor": "bash scripts/doctor.sh",
     "gd:doctor": "bash scripts/doctor.sh",
-    "lint": "pnpm -r run typecheck"
+    "lint": "pnpm -r run typecheck",
+    "workbench": "node apps/workbench/out/cli/index.js",
+    "workbench:pack": "pnpm --filter @perigee/workbench run pack"
   },
   "engines": {
     "node": ">=20"

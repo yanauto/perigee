@@ -1,0 +1,75 @@
+{
+  "name": "@perigee/workbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Perigee workbench shell",
+  "author": "yanauto",
+  "type": "module",
+  "main": "./out/main/index.js",
+  "bin": {
+    "workbench": "./out/cli/index.js"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build && tsc -p tsconfig.cli.json && chmod +x out/cli/index.js",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.web.json --noEmit && tsc -p tsconfig.cli.json --noEmit",
+    "workbench": "node ./out/cli/index.js",
+    "pack": "pnpm run build && electron-builder --mac --dir && sh scripts/sign-mac.sh"
+  },
+  "dependencies": {
+    "@perigee/engine-grok-acp": "workspace:*",
+    "@perigee/engine-protocol": "workspace:*",
+    "@perigee/event-schema": "workspace:*",
+    "@perigee/host-core": "workspace:*",
+    "dompurify": "^3.2.6",
+    "marked": "^15.0.12",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "electron": "^37.2.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^3.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  },
+  "build": {
+    "appId": "com.yanauto.grok",
+    "productName": "Grok",
+    "executableName": "GrokApp",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/main/**/*",
+      "out/preload/**/*",
+      "out/renderer/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "extendInfo": {
+        "CFBundleName": "Grok",
+        "CFBundleDisplayName": "Grok",
+        "CFBundleIdentifier": "com.yanauto.grok"
+      }
+    }
+  }
+}

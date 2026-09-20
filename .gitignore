@@ -128,3 +128,7 @@ perigee-mac/docs/**
 !perigee-mac/docs/playbooks/worktree-promote.md
 docs-private/
 artifacts/
+
+# workbench 本地数据 / 误落仓的截图（正式截图落 /tmp/perigee-workbench/）
+perigee-mac/apps/workbench/.data/
+perigee-mac/apps/workbench/**/*.png
